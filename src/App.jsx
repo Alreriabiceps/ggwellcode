@@ -6,11 +6,12 @@ import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import HomePage from './pages/HomePage';
 import ExplorePage from './pages/ExplorePage';
-import JobsPage from './pages/JobsPage';
-import AuthPage from './pages/AuthPage';
-import ProviderDashboard from './pages/ProviderDashboard';
 import ProviderProfile from './pages/ProviderProfile';
+import AuthPage from './pages/AuthPage';
+import QualityShowcase from './pages/QualityShowcase';
+import ProviderDashboard from './pages/ProviderDashboard';
 import AdminDashboard from './modules/admin/AdminDashboard';
+import AIAnalyzerPage from './pages/AIAnalyzerPage';
 
 // Context
 import { AuthProvider } from './lib/auth.jsx';
@@ -25,10 +26,11 @@ function App() {
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/explore" element={<ExplorePage />} />
-              <Route path="/jobs" element={<JobsPage />} />
+              <Route path="/ai-analyzer" element={<AIAnalyzerPage />} />
+              <Route path="/provider/:id" element={<ProviderProfile />} />
+              <Route path="/quality-showcase" element={<QualityShowcase />} />
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/dashboard" element={<ProviderDashboard />} />
-              <Route path="/provider/:id" element={<ProviderProfile />} />
               <Route path="/admin" element={<AdminDashboard />} />
             </Routes>
           </main>

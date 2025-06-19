@@ -11,7 +11,8 @@ import {
   UserIcon,
   ChevronDownIcon,
   Cog6ToothIcon,
-  ArrowRightOnRectangleIcon
+  ArrowRightOnRectangleIcon,
+  CameraIcon
 } from '@heroicons/react/24/outline';
 
 const Header = () => {
@@ -23,8 +24,9 @@ const Header = () => {
 
   const navigation = [
     { name: 'Home', href: '/', icon: HomeIcon },
-    { name: 'Explore Providers', href: '/explore', icon: BuildingOfficeIcon },
-    { name: 'Find Jobs', href: '/jobs', icon: BriefcaseIcon },
+    { name: 'Find Premium Providers', href: '/explore', icon: BuildingOfficeIcon },
+    { name: 'AI Image Analyzer', href: '/ai-analyzer', icon: CameraIcon },
+    { name: 'Quality Showcase', href: '/quality-showcase', icon: MagnifyingGlassIcon },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -112,7 +114,7 @@ const Header = () => {
               </div>
               <input
                 type="text"
-                placeholder="Search contractors, services..."
+                placeholder="Search premium providers..."
                 className="input pl-10 pr-4 py-2 w-full text-sm"
               />
             </div>
@@ -215,7 +217,7 @@ const Header = () => {
                 </div>
                 <input
                   type="text"
-                  placeholder="Search contractors..."
+                  placeholder="Search premium providers..."
                   className="input pl-10 pr-4 py-2 w-full text-sm"
                 />
               </div>

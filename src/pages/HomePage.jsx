@@ -16,7 +16,8 @@ import {
   FaHandshake,
   FaRocket,
   FaAward,
-  FaGem
+  FaGem,
+  FaBrain
 } from 'react-icons/fa';
 import { 
   HiSparkles,
@@ -30,6 +31,9 @@ import {
   MdBusinessCenter,
   MdLocationOn
 } from 'react-icons/md';
+import AnimatedSection from '../components/AnimatedSection';
+import AnimatedCounter from '../components/AnimatedCounter';
+import AIShowcase from '../components/AIShowcase';
 
 // Custom hook for intersection observer
 const useIntersectionObserver = (options = {}) => {
@@ -71,55 +75,7 @@ const useScrollPosition = () => {
   return scrollY;
 };
 
-// Animated section component
-const AnimatedSection = ({ children, className = '', delay = 0, animation = 'fade-in-up' }) => {
-  const [ref, isIntersecting] = useIntersectionObserver();
-  
-  return (
-    <div
-      ref={ref}
-      className={`transition-all duration-1000 ease-out ${
-        isIntersecting 
-          ? `opacity-100 ${animation === 'slide-in-left' ? 'translate-x-0' : 
-             animation === 'slide-in-right' ? 'translate-x-0' : 
-             animation === 'scale-in' ? 'scale-100' : 'translate-y-0'}`
-          : `opacity-0 ${animation === 'slide-in-left' ? '-translate-x-20' : 
-             animation === 'slide-in-right' ? 'translate-x-20' : 
-             animation === 'scale-in' ? 'scale-95' : 'translate-y-10'}`
-      } ${className}`}
-      style={{ transitionDelay: `${delay}ms` }}
-    >
-      {children}
-    </div>
-  );
-};
-
-// Counter animation component
-const AnimatedCounter = ({ target, duration = 2000 }) => {
-  const [count, setCount] = useState(0);
-  const [ref, isIntersecting] = useIntersectionObserver();
-
-  useEffect(() => {
-    if (!isIntersecting) return;
-
-    let start = 0;
-    const increment = target / (duration / 16);
-    
-    const timer = setInterval(() => {
-      start += increment;
-      if (start >= target) {
-        setCount(target);
-        clearInterval(timer);
-      } else {
-        setCount(Math.floor(start));
-      }
-    }, 16);
-
-    return () => clearInterval(timer);
-  }, [isIntersecting, target, duration]);
-
-  return <span ref={ref}>{count}</span>;
-};
+// Using imported AnimatedSection and AnimatedCounter components
 
 const HomePage = () => {
   const [highlights, setHighlights] = useState([]);
@@ -202,19 +158,19 @@ const HomePage = () => {
 
             <div className="text-center">
               <h1 className="text-5xl lg:text-7xl font-bold text-white mb-8 leading-tight animate-slide-up-stagger">
-                <span className="inline-block animate-slide-up-delay-100">Streamline</span>{' '}
-                <span className="inline-block animate-slide-up-delay-200">Operations,</span>{' '}
+                <span className="inline-block animate-slide-up-delay-100">Find</span>{' '}
+                <span className="inline-block animate-slide-up-delay-200">Quality</span>{' '}
                 <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent animate-gradient-shift inline-block animate-slide-up-delay-300">
-                  Skyrocket Revenue
+                  Premium Providers
                 </span>
-                <span className="inline-block animate-slide-up-delay-400">, and</span>{' '}
-                <span className="inline-block animate-slide-up-delay-500">Delight</span>{' '}
-                <span className="inline-block animate-slide-up-delay-600">Customers</span>
+                <span className="inline-block animate-slide-up-delay-400">, Not</span>{' '}
+                <span className="inline-block animate-slide-up-delay-500">Cheap</span>{' '}
+                <span className="inline-block animate-slide-up-delay-600">Alternatives</span>
               </h1>
               
               <p className="text-xl lg:text-2xl text-slate-300 mb-12 max-w-4xl mx-auto leading-relaxed animate-fade-in-up-slow delay-700">
-                Connect with verified contractors, MSMEs, and service providers across Bataan Province. 
-                Your trusted platform for discovering quality services and growing your business.
+                Stop settling for low-cost, low-quality work. Connect with verified premium contractors and MSMEs 
+                in Bataan who deliver lasting value and save you money long-term.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up-slow delay-1000">
@@ -223,15 +179,23 @@ const HomePage = () => {
                   className="group bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-500 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 hover:scale-110 animate-button-bounce"
                 >
                   <FaSearch className="inline mr-2 group-hover:animate-spin transition-transform duration-500" />
-                  Explore Providers
+                  Find Premium Providers
                   <div className="absolute inset-0 bg-white/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-shimmer"></div>
                 </Link>
                 <Link
-                  to="/auth?mode=register"
+                  to="/ai-analyzer"
+                  className="group bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-500 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 hover:scale-110 animate-button-bounce delay-100"
+                >
+                  <FaBrain className="inline mr-2 group-hover:animate-pulse transition-transform duration-500" />
+                  AI Image Analyzer
+                  <div className="absolute inset-0 bg-white/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-shimmer"></div>
+                </Link>
+                <Link
+                  to="/quality-showcase"
                   className="group bg-white/10 backdrop-blur-sm border border-white/20 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white/20 transition-all duration-500 hover:scale-110 animate-button-bounce delay-200"
                 >
-                  <FaRocket className="inline mr-2 group-hover:animate-bounce transition-transform duration-500" />
-                  Join as Provider
+                  <FaChartLine className="inline mr-2 group-hover:animate-bounce transition-transform duration-500" />
+                  Why Choose Quality?
                 </Link>
               </div>
             </div>
@@ -275,12 +239,12 @@ const HomePage = () => {
             <AnimatedSection animation="scale-in" delay={100}>
               <div className="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium mb-6 hover:scale-110 transition-all duration-500 animate-pulse-slow">
                 <HiSparkles className="inline mr-2 animate-spin-slow" />
-                Efficiency, Scalability, and Reliability
+                Premium Quality Over Low-Cost Alternatives
               </div>
             </AnimatedSection>
             <AnimatedSection delay={300}>
               <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 mb-6">
-                Unparalleled Service Discovery Capabilities
+                Why Premium Providers Save You Money
               </h2>
             </AnimatedSection>
           </div>
@@ -291,10 +255,10 @@ const HomePage = () => {
                 <FaBuilding className="text-3xl text-blue-600 group-hover:animate-bounce" />
               </div>
               <div className="text-4xl font-bold text-slate-900 mb-2">
-                <AnimatedCounter target={mockProviders.length} />+
+                <AnimatedCounter target={mockProviders.filter(p => p.rating >= 4.5).length} />+
               </div>
-              <div className="text-slate-600 font-medium">Service Providers</div>
-              <div className="text-sm text-slate-500 mt-1">Verified businesses across Bataan</div>
+              <div className="text-slate-600 font-medium">Premium Providers</div>
+              <div className="text-sm text-slate-500 mt-1">Quality-certified businesses</div>
             </AnimatedSection>
 
             <AnimatedSection delay={200} animation="slide-in-left" className="text-center group">
@@ -302,10 +266,10 @@ const HomePage = () => {
                 <MdVerified className="text-3xl text-green-600 group-hover:animate-pulse" />
               </div>
               <div className="text-4xl font-bold text-slate-900 mb-2">
-                <AnimatedCounter target={mockProviders.filter(p => p.badges.verified).length} />+
+                ₱<AnimatedCounter target={80000} />+
               </div>
-              <div className="text-slate-600 font-medium">Verified Businesses</div>
-              <div className="text-sm text-slate-500 mt-1">Quality assured providers</div>
+              <div className="text-slate-600 font-medium">Average Savings</div>
+              <div className="text-sm text-slate-500 mt-1">Vs. cheap alternatives over 5 years</div>
             </AnimatedSection>
 
             <AnimatedSection delay={300} animation="slide-in-right" className="text-center group">
@@ -313,10 +277,10 @@ const HomePage = () => {
                 <FaBullseye className="text-3xl text-purple-600 group-hover:animate-spin" />
               </div>
               <div className="text-4xl font-bold text-slate-900 mb-2">
-                <AnimatedCounter target={10} />+
+                <AnimatedCounter target={95} />%
               </div>
-              <div className="text-slate-600 font-medium">Service Categories</div>
-              <div className="text-sm text-slate-500 mt-1">Comprehensive coverage</div>
+              <div className="text-slate-600 font-medium">Client Satisfaction</div>
+              <div className="text-sm text-slate-500 mt-1">Premium provider rating</div>
             </AnimatedSection>
 
             <AnimatedSection delay={400} animation="slide-in-right" className="text-center group">
@@ -327,9 +291,16 @@ const HomePage = () => {
                 <AnimatedCounter target={12} />+
               </div>
               <div className="text-slate-600 font-medium">Municipalities</div>
-              <div className="text-sm text-slate-500 mt-1">Province-wide coverage</div>
+              <div className="text-sm text-slate-500 mt-1">Province-wide premium coverage</div>
             </AnimatedSection>
           </div>
+        </div>
+      </AnimatedSection>
+
+      {/* 🚀 AI SMART MATCHING SHOWCASE - Revolutionary Gemini AI */}
+      <AnimatedSection className="py-20 bg-gradient-to-br from-slate-900 to-blue-900">
+        <div className="container mx-auto px-4">
+          <AIShowcase />
         </div>
       </AnimatedSection>
 
@@ -345,13 +316,13 @@ const HomePage = () => {
             </AnimatedSection>
             <AnimatedSection delay={300}>
               <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 mb-6">
-                Intuitive Platform and Effortless Service Discovery
+                Premium Quality Features That Save Money
               </h2>
             </AnimatedSection>
             <AnimatedSection delay={500}>
               <p className="text-xl text-slate-600 max-w-4xl mx-auto">
-                Bataan Connect is designed and engineered to streamline operations, accelerate business growth, 
-                and deliver exceptional customer experiences across the province.
+                Bataan Connect's premium providers use superior materials, proven techniques, 
+                and guaranteed workmanship that eliminates costly repairs and replacements.
               </p>
             </AnimatedSection>
           </div>
@@ -364,9 +335,9 @@ const HomePage = () => {
                 </div>
                 <div className="transform group-hover:translate-x-2 transition-transform duration-500">
                   <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors duration-500">
-                    Powerful Search Tools
+                    Quality-First Matching
                   </h3>
-                  <p className="text-slate-600">Advanced filtering and map-based discovery for finding the perfect service provider.</p>
+                  <p className="text-slate-600">Advanced algorithms prioritize proven quality over lowest price.</p>
                   <div className="text-sm text-blue-600 font-medium mt-1 opacity-60 group-hover:opacity-100 transition-all duration-500 transform group-hover:translate-x-2">01</div>
                 </div>
               </AnimatedSection>
@@ -377,9 +348,9 @@ const HomePage = () => {
                 </div>
                 <div className="transform group-hover:translate-x-2 transition-transform duration-500">
                   <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-green-600 transition-colors duration-500">
-                    Real-Time Analytics
+                    Long-Term Value Tracking
                   </h3>
-                  <p className="text-slate-600">Comprehensive dashboards and insights for both providers and customers.</p>
+                  <p className="text-slate-600">See actual cost savings and ROI from choosing premium providers.</p>
                   <div className="text-sm text-green-600 font-medium mt-1 opacity-60 group-hover:opacity-100 transition-all duration-500 transform group-hover:translate-x-2">02</div>
                 </div>
               </AnimatedSection>
@@ -390,9 +361,9 @@ const HomePage = () => {
                 </div>
                 <div className="transform group-hover:translate-x-2 transition-transform duration-500">
                   <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-purple-600 transition-colors duration-500">
-                    Instant Connection
+                    Quality Guarantee System
                   </h3>
-                  <p className="text-slate-600">Direct communication channels and streamlined booking processes.</p>
+                  <p className="text-slate-600">Platform-backed warranties and satisfaction guarantees.</p>
                   <div className="text-sm text-purple-600 font-medium mt-1 opacity-60 group-hover:opacity-100 transition-all duration-500 transform group-hover:translate-x-2">03</div>
                 </div>
               </AnimatedSection>
@@ -403,9 +374,9 @@ const HomePage = () => {
                 </div>
                 <div className="transform group-hover:translate-x-2 transition-transform duration-500">
                   <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-orange-600 transition-colors duration-500">
-                    Verified Quality
+                    Premium Certification
                   </h3>
-                  <p className="text-slate-600">Comprehensive verification system ensuring trusted service providers.</p>
+                  <p className="text-slate-600">Rigorous vetting ensures only quality providers get certified.</p>
                   <div className="text-sm text-orange-600 font-medium mt-1 opacity-60 group-hover:opacity-100 transition-all duration-500 transform group-hover:translate-x-2">04</div>
                 </div>
               </AnimatedSection>
@@ -415,24 +386,24 @@ const HomePage = () => {
               <div className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl p-8 text-white hover:shadow-2xl transition-all duration-700 hover:scale-105 transform hover:rotate-1 group">
                 <h3 className="text-2xl font-bold mb-4 flex items-center">
                   <HiGlobe className="mr-2 group-hover:animate-spin" />
-                  Platform Highlights
+                  Premium Quality Benefits
                 </h3>
                 <ul className="space-y-3">
                   <li className="flex items-center group-hover:translate-x-2 transition-transform duration-500 delay-100">
                     <div className="w-2 h-2 bg-white rounded-full mr-3 group-hover:animate-ping"></div>
-                    <span>Real-time provider availability</span>
+                    <span>3x longer lasting results</span>
                   </li>
                   <li className="flex items-center group-hover:translate-x-2 transition-transform duration-500 delay-200">
                     <div className="w-2 h-2 bg-white rounded-full mr-3 group-hover:animate-ping"></div>
-                    <span>Integrated rating and review system</span>
+                    <span>No costly repairs or rework</span>
                   </li>
                   <li className="flex items-center group-hover:translate-x-2 transition-transform duration-500 delay-300">
                     <div className="w-2 h-2 bg-white rounded-full mr-3 group-hover:animate-ping"></div>
-                    <span>Mobile-responsive design</span>
+                    <span>Premium materials included</span>
                   </li>
                   <li className="flex items-center group-hover:translate-x-2 transition-transform duration-500 delay-400">
                     <div className="w-2 h-2 bg-white rounded-full mr-3 group-hover:animate-ping"></div>
-                    <span>Secure communication channels</span>
+                    <span>Guaranteed satisfaction</span>
                   </li>
                 </ul>
               </div>
@@ -453,12 +424,12 @@ const HomePage = () => {
             </AnimatedSection>
             <AnimatedSection delay={300}>
               <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 mb-6">
-                Featured Service Providers
+                Premium Providers Who Deliver Value
               </h2>
             </AnimatedSection>
             <AnimatedSection delay={500}>
               <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-                Discover exceptional service providers who consistently deliver outstanding results across Bataan Province.
+                These certified premium providers consistently deliver superior results that save clients money long-term.
               </p>
             </AnimatedSection>
           </div>
@@ -536,9 +507,9 @@ const HomePage = () => {
               to="/explore"
               className="group bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-700 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 inline-flex items-center justify-center hover:scale-110"
             >
-              <FaSearch className="mr-2 group-hover:animate-spin" />
-              Explore All Providers
-              <HiSparkles className="ml-2 group-hover:animate-ping" />
+              <FaRocket className="mr-2 group-hover:animate-bounce" />
+              Find Premium Providers
+              <FaBolt className="ml-2 group-hover:animate-pulse" />
             </Link>
           </AnimatedSection>
         </div>
@@ -642,15 +613,15 @@ const HomePage = () => {
               className="group bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-700 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 inline-flex items-center justify-center hover:scale-110"
             >
               <FaRocket className="mr-2 group-hover:animate-bounce" />
-              Start Exploring
+              Find Premium Providers
               <FaBolt className="ml-2 group-hover:animate-pulse" />
             </Link>
             <Link
-              to="/auth?mode=register"
+              to="/quality-showcase"
               className="group bg-white/10 backdrop-blur-sm border border-white/20 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white/20 transition-all duration-700 hover:scale-110 inline-flex items-center justify-center"
             >
               <MdBusinessCenter className="mr-2 group-hover:animate-pulse" />
-              Join as Provider
+              See Quality Difference
             </Link>
           </AnimatedSection>
         </AnimatedSection>
