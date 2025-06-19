@@ -9,6 +9,8 @@ import ExplorePage from './pages/ExplorePage';
 import JobsPage from './pages/JobsPage';
 import AuthPage from './pages/AuthPage';
 import ProviderDashboard from './pages/ProviderDashboard';
+import ProviderProfile from './pages/ProviderProfile';
+import AdminDashboard from './modules/admin/AdminDashboard';
 
 // Context
 import { AuthProvider } from './lib/auth.jsx';
@@ -26,6 +28,8 @@ function App() {
               <Route path="/jobs" element={<JobsPage />} />
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/dashboard" element={<ProviderDashboard />} />
+              <Route path="/provider/:id" element={<ProviderProfile />} />
+              <Route path="/admin" element={<AdminDashboard />} />
             </Routes>
           </main>
           <Footer />

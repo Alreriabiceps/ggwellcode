@@ -28,10 +28,19 @@ const LoginForm = ({ onToggleMode }) => {
     setError('');
 
     try {
-      await login(formData);
-      navigate('/');
+      const response = await login(formData);
+      const user = response.data.user;
+      
+      // Redirect based on user role
+      if (user.role === 'admin') {
+        navigate('/admin');
+      } else if (user.role === 'provider') {
+        navigate('/dashboard');
+      } else {
+        navigate('/');
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      setError(err.message || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -87,6 +96,17 @@ const LoginForm = ({ onToggleMode }) => {
         >
           Don't have an account? Sign up
         </button>
+      </div>
+      
+      {/* Demo Account Hints */}
+      <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+        <p className="text-xs text-blue-700 font-medium mb-2">Quick Demo Access:</p>
+        <div className="text-xs text-blue-600 space-y-1">
+          <p>• <strong>Provider:</strong> provider@example.com</p>
+          <p>• <strong>Admin:</strong> admin@example.com</p>
+          <p>• <strong>Client:</strong> user@example.com</p>
+          <p className="text-blue-500 mt-2">Password: any password works!</p>
+        </div>
       </div>
     </form>
   );

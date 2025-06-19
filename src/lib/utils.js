@@ -21,11 +21,13 @@ export function formatCurrency(amount) {
 }
 
 export function truncateText(text, maxLength = 100) {
+  if (!text || typeof text !== 'string') return '';
   if (text.length <= maxLength) return text;
   return text.slice(0, maxLength) + '...';
 }
 
 export function getInitials(name) {
+  if (!name || typeof name !== 'string') return '';
   return name
     .split(' ')
     .map(word => word[0])
