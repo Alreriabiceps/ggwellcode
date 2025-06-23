@@ -99,7 +99,7 @@ const HomePage = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-600 animate-pulse">Loading Bataan Connect...</p>
+          <p className="text-gray-600 animate-pulse">Loading Rekomendito...</p>
         </div>
       </div>
     );
@@ -321,7 +321,7 @@ const HomePage = () => {
             </AnimatedSection>
             <AnimatedSection delay={500}>
               <p className="text-xl text-slate-600 max-w-4xl mx-auto">
-                Bataan Connect's premium providers use superior materials, proven techniques, 
+                Rekomendito's premium providers use superior materials, proven techniques, 
                 and guaranteed workmanship that eliminates costly repairs and replacements.
               </p>
             </AnimatedSection>
@@ -603,7 +603,7 @@ const HomePage = () => {
           </AnimatedSection>
           <AnimatedSection delay={300}>
             <p className="text-xl text-slate-300 mb-12 max-w-3xl mx-auto">
-              Schedule a demo today and witness the transformative power of Bataan Connect. 
+              Schedule a demo today and witness the transformative power of Rekomendito. 
               Your journey to service excellence starts here.
             </p>
           </AnimatedSection>

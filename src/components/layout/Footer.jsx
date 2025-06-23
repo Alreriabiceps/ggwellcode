@@ -10,7 +10,7 @@ const Footer = () => {
         <div className="grid md:grid-cols-4 gap-8">
           {/* Brand */}
           <div>
-            <h3 className="text-xl font-bold mb-4">🏗️ Bataan Connect</h3>
+            <h3 className="text-xl font-bold mb-4">🏗️ Rekomendito</h3>
             <p className="text-gray-300 text-sm">
               Smart Contractor & MSME Discovery Platform for Bataan Province.
             </p>
@@ -78,7 +78,7 @@ const Footer = () => {
         </div>
         
         <div className="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-300">
-          <p>&copy; {currentYear} Bataan Connect. All rights reserved.</p>
+          <p>&copy; {currentYear} Rekomendito. All rights reserved.</p>
           <p className="mt-2">
             Built with ❤️ for the people of Bataan
           </p>

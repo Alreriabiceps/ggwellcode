@@ -18,7 +18,7 @@ const AuthPage = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">
-            {isLogin ? 'Welcome Back' : 'Join Bataan Connect'}
+            {isLogin ? 'Welcome Back' : 'Join Rekomendito'}
           </CardTitle>
           <CardDescription>
             {isLogin 
