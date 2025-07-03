@@ -26,7 +26,6 @@ const Header = () => {
     { name: 'Home', href: '/', icon: HomeIcon },
     { name: 'Find Premium Providers', href: '/explore', icon: BuildingOfficeIcon },
     { name: 'AI Image Analyzer', href: '/ai-analyzer', icon: CameraIcon },
-    { name: 'Quality Showcase', href: '/quality-showcase', icon: MagnifyingGlassIcon },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -54,15 +53,15 @@ const Header = () => {
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">BC</span>
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-xl">R</span>
               </div>
               <div className="hidden sm:block">
-                <h1 className="text-xl font-heading font-bold text-gradient">
-                  Bataan Connect
+                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  Rekomendito
                 </h1>
-                <p className="text-xs text-secondary-600 -mt-1">
-                  Smart Contractor Discovery
+                <p className="text-xs text-gray-600 -mt-1">
+                  Smart Provider Discovery
                 </p>
               </div>
             </Link>
@@ -78,8 +77,8 @@ const Header = () => {
                   to={item.href}
                   className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
                     isActive(item.href)
-                      ? 'text-primary-600 bg-primary-50'
-                      : 'text-secondary-700 hover:text-primary-600 hover:bg-secondary-50'
+                      ? 'text-blue-600 bg-blue-50'
+                      : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -94,8 +93,8 @@ const Header = () => {
                 to={getDashboardLink()}
                 className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
                   isActive(getDashboardLink())
-                    ? 'text-primary-600 bg-primary-50'
-                    : 'text-secondary-700 hover:text-primary-600 hover:bg-secondary-50'
+                    ? 'text-blue-600 bg-blue-50'
+                    : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
                 }`}
               >
                 <UserIcon className="w-4 h-4" />
@@ -110,12 +109,12 @@ const Header = () => {
           <div className="hidden lg:flex flex-1 max-w-md mx-8">
             <div className="relative w-full">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <MagnifyingGlassIcon className="h-5 w-5 text-secondary-400" />
+                <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
               </div>
               <input
                 type="text"
                 placeholder="Search premium providers..."
-                className="input pl-10 pr-4 py-2 w-full text-sm"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -175,13 +174,13 @@ const Header = () => {
               <>
                 <Link
                   to="/auth"
-                  className="btn-outline btn-sm"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
                 >
                   Sign In
                 </Link>
                 <Link
                   to="/auth?mode=register"
-                  className="btn-primary btn-sm"
+                  className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   Get Started
                 </Link>
@@ -193,7 +192,7 @@ const Header = () => {
           <div className="md:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-secondary-400 hover:text-secondary-500 hover:bg-secondary-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
             >
               {isMenuOpen ? (
                 <XMarkIcon className="block h-6 w-6" />
@@ -208,17 +207,17 @@ const Header = () => {
       {/* Mobile Navigation */}
       {isMenuOpen && (
         <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t border-secondary-200">
+          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t border-gray-200">
             {/* Mobile Search */}
             <div className="px-3 py-2">
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <MagnifyingGlassIcon className="h-5 w-5 text-secondary-400" />
+                  <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                   type="text"
                   placeholder="Search premium providers..."
-                  className="input pl-10 pr-4 py-2 w-full text-sm"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
             </div>
@@ -232,8 +231,8 @@ const Header = () => {
                   to={item.href}
                   className={`flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium ${
                     isActive(item.href)
-                      ? 'text-primary-600 bg-primary-50'
-                      : 'text-secondary-700 hover:text-primary-600 hover:bg-secondary-50'
+                      ? 'text-blue-600 bg-blue-50'
+                      : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
                   }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
@@ -249,59 +248,69 @@ const Header = () => {
                 to={getDashboardLink()}
                 className={`flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium ${
                   isActive(getDashboardLink())
-                    ? 'text-primary-600 bg-primary-50'
-                    : 'text-secondary-700 hover:text-primary-600 hover:bg-secondary-50'
+                    ? 'text-blue-600 bg-blue-50'
+                    : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
                 }`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 <UserIcon className="w-5 h-5" />
-                <span>
-                  {isAdmin ? 'Admin Panel' : isProvider ? 'Dashboard' : 'Dashboard'}
-                </span>
+                <span>{isAdmin ? 'Admin Panel' : isProvider ? 'Provider Dashboard' : 'Dashboard'}</span>
               </Link>
             )}
 
-            {/* Mobile User Actions */}
-            <div className="px-3 py-4 border-t border-secondary-200 space-y-2">
-              {isAuthenticated ? (
-                <>
-                  <div className="flex items-center space-x-3 mb-3">
-                    <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                      <span className="text-white font-medium">
-                        {getUserInitials(user?.name)}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">{user?.name}</p>
-                      <p className="text-sm text-gray-500 capitalize">{user?.role}</p>
-                    </div>
+            {/* Mobile Auth Buttons */}
+            {isAuthenticated ? (
+              <div className="border-t border-gray-200 pt-4 pb-3">
+                <div className="flex items-center px-5">
+                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                    <span className="text-white font-medium">
+                      {getUserInitials(user?.name)}
+                    </span>
                   </div>
-                  <button
-                    onClick={handleLogout}
-                    className="block w-full btn-outline text-center"
+                  <div className="ml-3">
+                    <div className="text-base font-medium text-gray-800">{user?.name}</div>
+                    <div className="text-sm font-medium text-gray-500 capitalize">{user?.role}</div>
+                  </div>
+                </div>
+                <div className="mt-3 space-y-1 px-2">
+                  <Link
+                    to="/profile"
+                    className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50"
+                    onClick={() => setIsMenuOpen(false)}
                   >
+                    <Cog6ToothIcon className="w-5 h-5 mr-2" />
+                    Settings
+                  </Link>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsMenuOpen(false);
+                    }}
+                    className="flex items-center w-full px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50"
+                  >
+                    <ArrowRightOnRectangleIcon className="w-5 h-5 mr-2" />
                     Sign Out
                   </button>
-                </>
-              ) : (
-                <>
-                  <Link
-                    to="/auth"
-                    className="block w-full btn-outline text-center"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Sign In
-                  </Link>
-                  <Link
-                    to="/auth?mode=register"
-                    className="block w-full btn-primary text-center"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Get Started
-                  </Link>
-                </>
-              )}
-            </div>
+                </div>
+              </div>
+            ) : (
+              <div className="border-t border-gray-200 pt-4 pb-3 space-y-1 px-2">
+                <Link
+                  to="/auth"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/auth?mode=register"
+                  className="block px-3 py-2 rounded-md text-base font-medium bg-blue-600 text-white hover:bg-blue-700"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Get Started
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       )}

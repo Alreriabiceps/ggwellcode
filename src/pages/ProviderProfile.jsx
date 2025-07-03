@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { mockProviders } from '../data/mockData';
+import { providerAPI } from '../lib/api';
 import qualityAI from '../lib/ai';
 import { 
   FaBolt, 
@@ -21,21 +21,38 @@ const ProviderProfile = () => {
   const [loadingAI, setLoadingAI] = useState(false);
 
   useEffect(() => {
-    // Load provider data
-    console.log('🔍 Looking for provider with ID:', id);
-    console.log('📋 Available provider IDs:', mockProviders.map(p => p._id));
-    
-    const foundProvider = mockProviders.find(p => p._id === id);
-    if (foundProvider) {
-      console.log('✅ Provider found:', foundProvider.businessName);
-      setProvider(foundProvider);
-      setLoading(false);
-      
-      // Load AI value proposition
-      loadAIValueProp(foundProvider);
-    } else {
-      console.log('❌ Provider not found with ID:', id);
-      setLoading(false);
+    const fetchProvider = async () => {
+      try {
+        setLoading(true);
+        console.log('🔍 Looking for provider with ID:', id);
+        
+        const response = await providerAPI.getById(id);
+        
+        if (response.data && response.data.success) {
+          const foundProvider = response.data.data;
+          console.log('✅ Provider found:', foundProvider.businessName);
+          setProvider(foundProvider);
+          
+          // Load AI value proposition
+          loadAIValueProp(foundProvider);
+        } else {
+          console.log('❌ Provider not found with ID:', id);
+          setError('Provider not found');
+        }
+      } catch (error) {
+        console.error('Error fetching provider:', error);
+        if (error.response?.status === 404) {
+          setError('Provider not found');
+        } else {
+          setError('Failed to load provider. Please try again later.');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchProvider();
     }
   }, [id]);
 
@@ -46,7 +63,7 @@ const ProviderProfile = () => {
       setAiValueProp(valueProp);
     } catch (error) {
       console.error('AI Enhancement Error:', error);
-      setAiValueProp(`${providerData.businessName} brings ${providerData.yearsInBusiness} years of professional experience in ${providerData.category.toLowerCase()} services. With a ${providerData.rating}-star rating and verified status, they deliver quality work that clients trust and recommend.`);
+      setAiValueProp(`${providerData.businessName} brings ${providerData.yearsExperience || 0} years of professional experience in ${(providerData.category || '').toLowerCase()} services. With a ${(providerData.rating || 0).toFixed(1)}-star rating${providerData.isVerified ? ' and verified status' : ''}, they deliver quality work that clients trust and recommend.`);
     } finally {
       setLoadingAI(false);
     }
@@ -108,7 +125,7 @@ const ProviderProfile = () => {
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                   <h1 className="text-2xl font-bold text-gray-900">{provider.businessName}</h1>
-                  {provider.badges.verified && (
+                  {provider.isVerified && (
                     <FaCheckCircle className="text-blue-500" title="Verified Provider" />
                   )}
                 </div>
@@ -119,25 +136,25 @@ const ProviderProfile = () => {
                 <div className="flex items-center gap-4">
                   <div className="flex items-center text-yellow-400">
                     <FaStar className="mr-1" />
-                    <span className="text-gray-900 font-medium">{provider.rating}</span>
-                    <span className="text-gray-500 ml-1">({provider.reviewCount} reviews)</span>
+                    <span className="text-gray-900 font-medium">{(provider.rating || 0).toFixed(1)}</span>
+                    <span className="text-gray-500 ml-1">({provider.reviewCount || 0} reviews)</span>
                   </div>
-                  <span className="text-gray-600">{provider.yearsInBusiness} years experience</span>
+                  <span className="text-gray-600">{provider.yearsExperience || 0} years experience</span>
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
-                {provider.contact.phone && (
+                {provider.phone && (
                   <button
-                    onClick={() => handleContactClick('phone', provider.contact.phone)}
+                    onClick={() => handleContactClick('phone', provider.phone)}
                     className="flex items-center justify-center bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
                   >
                     <FaPhone className="mr-2" />
                     Call
                   </button>
                 )}
-                {provider.contact.email && (
+                {provider.email && (
                   <button
-                    onClick={() => handleContactClick('email', provider.contact.email)}
+                    onClick={() => handleContactClick('email', provider.email)}
                     className="flex items-center justify-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     <FaEnvelope className="mr-2" />
@@ -170,7 +187,9 @@ const ProviderProfile = () => {
           {/* About Section */}
           <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
             <h2 className="text-lg font-bold text-gray-900 mb-4">About {provider.businessName}</h2>
-            <p className="text-gray-700 leading-relaxed mb-6">{provider.description}</p>
+            <p className="text-gray-700 leading-relaxed mb-6">
+              {provider.description || 'Professional service provider in Bataan.'}
+            </p>
             
             <div className="grid md:grid-cols-2 gap-6">
               <div>
@@ -178,15 +197,21 @@ const ProviderProfile = () => {
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Owner:</span>
-                    <span className="font-medium">{provider.ownerName}</span>
+                    <span className="font-medium">{provider.ownerName || 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Category:</span>
-                    <span className="font-medium">{provider.category}</span>
+                    <span className="font-medium">{provider.category || 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Team Size:</span>
-                    <span className="font-medium">{provider.employeeCount} employees</span>
+                    <span className="text-gray-600">Years in Business:</span>
+                    <span className="font-medium">{provider.yearsExperience || 0} years</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Status:</span>
+                    <span className={`font-medium ${provider.isVerified ? 'text-green-600' : 'text-yellow-600'}`}>
+                      {provider.isVerified ? 'Verified' : 'Pending Verification'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -194,7 +219,7 @@ const ProviderProfile = () => {
               <div>
                 <h3 className="font-semibold text-gray-900 mb-3">Services</h3>
                 <div className="flex flex-wrap gap-2">
-                  {provider.services.slice(0, 6).map((service, index) => (
+                  {(provider.services || []).slice(0, 6).map((service, index) => (
                     <span
                       key={index}
                       className="bg-gray-100 text-gray-700 text-sm px-3 py-1 rounded-md"
@@ -202,60 +227,123 @@ const ProviderProfile = () => {
                       {service}
                     </span>
                   ))}
-                  {provider.services.length > 6 && (
-                    <span className="text-sm text-gray-500 px-2 py-1">
-                      +{provider.services.length - 6} more
+                  {(provider.services || []).length > 6 && (
+                    <span className="text-gray-500 text-sm px-3 py-1">
+                      +{(provider.services || []).length - 6} more
                     </span>
+                  )}
+                  {(provider.services || []).length === 0 && (
+                    <span className="text-gray-500 text-sm">No services listed</span>
                   )}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Contact Section */}
+          {/* Specialties */}
+          {(provider.specialties || []).length > 0 && (
+            <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">Specialties</h2>
+              <div className="flex flex-wrap gap-2">
+                {provider.specialties.map((specialty, index) => (
+                  <span
+                    key={index}
+                    className="bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full"
+                  >
+                    {specialty}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Portfolio */}
+          {(provider.portfolio || []).length > 0 && (
+            <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">Portfolio</h2>
+              <div className="grid md:grid-cols-3 gap-4">
+                {provider.portfolio.slice(0, 6).map((image, index) => (
+                  <div key={index} className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                    <img 
+                      src={image} 
+                      alt={`Portfolio ${index + 1}`}
+                      className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
+                      onError={(e) => {
+                        e.target.src = 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=400';
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Contact Information */}
           <div className="bg-white rounded-lg shadow-sm border p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-4">Contact Information</h2>
-            <div className="grid md:grid-cols-2 gap-4">
-              {provider.contact.phone && (
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <FaPhone className="text-green-600" />
-                  <div>
-                    <p className="font-medium text-gray-900">Phone</p>
-                    <p className="text-gray-600">{provider.contact.phone}</p>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                {provider.phone && (
+                  <div className="flex items-center">
+                    <FaPhone className="text-gray-400 mr-3" />
+                    <span className="text-gray-700">{provider.phone}</span>
                   </div>
-                </div>
-              )}
-              
-              {provider.contact.email && (
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <FaEnvelope className="text-blue-600" />
-                  <div>
-                    <p className="font-medium text-gray-900">Email</p>
-                    <p className="text-gray-600">{provider.contact.email}</p>
+                )}
+                {provider.email && (
+                  <div className="flex items-center">
+                    <FaEnvelope className="text-gray-400 mr-3" />
+                    <span className="text-gray-700">{provider.email}</span>
                   </div>
-                </div>
-              )}
-              
-              {provider.contact.website && (
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <FaGlobe className="text-gray-600" />
-                  <div>
-                    <p className="font-medium text-gray-900">Website</p>
-                    <p className="text-gray-600">{provider.contact.website}</p>
+                )}
+                {provider.website && (
+                  <div className="flex items-center">
+                    <FaGlobe className="text-gray-400 mr-3" />
+                    <a 
+                      href={provider.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      {provider.website}
+                    </a>
                   </div>
+                )}
+              </div>
+              <div>
+                <div className="flex items-center mb-2">
+                  <FaMapMarkerAlt className="text-gray-400 mr-3" />
+                  <span className="text-gray-700">Service Area</span>
                 </div>
-              )}
+                <p className="text-gray-600 ml-6">
+                  {provider.address && `${provider.address}, `}
+                  {provider.barangay}, {provider.municipality}, Bataan
+                </p>
+              </div>
             </div>
-          </div>
 
-          {/* Back Button */}
-          <div className="text-center mt-8">
-            <Link
-              to="/explore"
-              className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium"
-            >
-              ← Back to Provider Directory
-            </Link>
+            {/* Contact Actions */}
+            <div className="mt-6 pt-6 border-t">
+              <div className="flex flex-col sm:flex-row gap-3">
+                {provider.phone && (
+                  <button
+                    onClick={() => handleContactClick('phone', provider.phone)}
+                    className="flex items-center justify-center bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    <FaPhone className="mr-2" />
+                    Call {provider.businessName}
+                  </button>
+                )}
+                {provider.email && (
+                  <button
+                    onClick={() => handleContactClick('email', provider.email)}
+                    className="flex items-center justify-center bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <FaEnvelope className="mr-2" />
+                    Send Email
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>

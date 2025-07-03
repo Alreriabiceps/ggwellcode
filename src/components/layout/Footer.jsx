@@ -12,7 +12,7 @@ const Footer = () => {
           <div>
             <h3 className="text-xl font-bold mb-4">🏗️ Rekomendito</h3>
             <p className="text-gray-300 text-sm">
-              Smart Contractor & MSME Discovery Platform for Bataan Province.
+              Smart Provider Discovery Platform for Bataan Province.
             </p>
           </div>
           
@@ -70,7 +70,7 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4">Contact</h4>
             <ul className="space-y-2 text-sm text-gray-300">
-              <li>📧 support@bataanconnect.ph</li>
+              <li>📧 support@rekomendito.ph</li>
               <li>📱 +63 XXX XXX XXXX</li>
               <li>📍 Bataan Province, Philippines</li>
             </ul>

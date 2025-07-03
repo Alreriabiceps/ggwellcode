@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { mockProviders } from '../data/mockData';
+import { providerAPI } from '../lib/api';
 import LeafletMap from '../components/LeafletMap';
 import { 
   FaSearch, 
@@ -28,6 +28,7 @@ const ExplorePage = () => {
   const [viewMode, setViewMode] = useState('grid');
   const [selectedProvider, setSelectedProvider] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Simplified quality tiers
   const qualityTiers = [
@@ -54,12 +55,31 @@ const ExplorePage = () => {
     'Landscaping', 'Catering', 'IT Services', 'Cleaning', 'Beauty & Wellness', 'Education'
   ];
 
+  // Fetch providers from API
   useEffect(() => {
-    setTimeout(() => {
-      setProviders(mockProviders);
-      setFilteredProviders(mockProviders);
-      setLoading(false);
-    }, 500);
+    const fetchProviders = async () => {
+      try {
+        setLoading(true);
+        const response = await providerAPI.getAll();
+        
+        if (response.data && response.data.success) {
+          setProviders(response.data.data.providers || []);
+          setFilteredProviders(response.data.data.providers || []);
+        } else {
+          setProviders([]);
+          setFilteredProviders([]);
+        }
+      } catch (error) {
+        console.error('Error fetching providers:', error);
+        setError('Failed to load providers. Please try again later.');
+        setProviders([]);
+        setFilteredProviders([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProviders();
   }, []);
 
   useEffect(() => {
@@ -68,9 +88,9 @@ const ExplorePage = () => {
     // Search filter
     if (searchTerm) {
       filtered = filtered.filter(provider =>
-        provider.businessName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        provider.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        provider.services.some(service => 
+        provider.businessName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        provider.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        provider.services?.some(service => 
           service.toLowerCase().includes(searchTerm.toLowerCase())
         )
       );
@@ -94,10 +114,10 @@ const ExplorePage = () => {
     if (qualityFilter !== 'all') {
       const tier = qualityTiers.find(t => t.id === qualityFilter);
       if (tier && tier.minRating !== undefined) {
-        filtered = filtered.filter(provider => provider.rating >= tier.minRating);
+        filtered = filtered.filter(provider => (provider.rating || 0) >= tier.minRating);
       }
       if (qualityFilter === 'verified') {
-        filtered = filtered.filter(provider => provider.badges.verified);
+        filtered = filtered.filter(provider => provider.isVerified);
       }
     }
 
@@ -105,13 +125,13 @@ const ExplorePage = () => {
     filtered.sort((a, b) => {
       switch (sortBy) {
         case 'rating':
-          return b.rating - a.rating;
+          return (b.rating || 0) - (a.rating || 0);
         case 'experience':
-          return b.yearsExperience - a.yearsExperience;
+          return (b.yearsExperience || 0) - (a.yearsExperience || 0);
         case 'reviews':
-          return b.reviewCount - a.reviewCount;
+          return (b.reviewCount || 0) - (a.reviewCount || 0);
         default:
-          return b.rating - a.rating;
+          return (b.rating || 0) - (a.rating || 0);
       }
     });
 
@@ -119,11 +139,11 @@ const ExplorePage = () => {
   }, [providers, searchTerm, selectedMunicipality, selectedCategory, qualityFilter, sortBy]);
 
   const getProviderBadge = (provider) => {
-    if (provider.rating >= 4.5 && provider.badges.verified) {
+    if ((provider.rating || 0) >= 4.5 && provider.isVerified) {
       return { label: 'Premium', color: 'bg-blue-100 text-blue-800' };
-    } else if (provider.rating >= 4.0 && provider.badges.verified) {
+    } else if ((provider.rating || 0) >= 4.0 && provider.isVerified) {
       return { label: 'Quality', color: 'bg-green-100 text-green-800' };
-    } else if (provider.badges.verified) {
+    } else if (provider.isVerified) {
       return { label: 'Verified', color: 'bg-gray-100 text-gray-800' };
     }
     return null;
@@ -134,7 +154,25 @@ const ExplorePage = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-600">Finding providers...</p>
+          <p className="text-gray-600">Loading providers...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Try Again
+          </button>
         </div>
       </div>
     );
@@ -150,7 +188,9 @@ const ExplorePage = () => {
               <h1 className="text-2xl font-bold text-gray-900 mb-1">
                 Find Quality Providers
               </h1>
-              <p className="text-gray-600">Discover trusted professionals in Bataan</p>
+              <p className="text-gray-600">
+                Discover trusted professionals in Bataan ({filteredProviders.length} providers found)
+              </p>
             </div>
             <div className="flex bg-gray-100 rounded-lg p-1">
               <button
@@ -198,20 +238,7 @@ const ExplorePage = () => {
               </div>
             </div>
 
-            {/* Quality Filter */}
-            <div>
-              <select
-                value={qualityFilter}
-                onChange={(e) => setQualityFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                {qualityTiers.map(tier => (
-                  <option key={tier.id} value={tier.id}>{tier.name}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Location Filter */}
+            {/* Municipality Filter */}
             <div>
               <select
                 value={selectedMunicipality}
@@ -219,7 +246,24 @@ const ExplorePage = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 {municipalities.map(municipality => (
-                  <option key={municipality} value={municipality}>{municipality}</option>
+                  <option key={municipality} value={municipality}>
+                    {municipality}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Category Filter */}
+            <div>
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                {categories.map(category => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
                 ))}
               </select>
             </div>
@@ -232,7 +276,9 @@ const ExplorePage = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 {sortOptions.map(option => (
-                  <option key={option.id} value={option.id}>{option.name}</option>
+                  <option key={option.id} value={option.id}>
+                    {option.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -240,128 +286,114 @@ const ExplorePage = () => {
         </div>
       </div>
 
-      {/* Results Count */}
-      <div className="container mx-auto px-4 py-4">
-        <p className="text-gray-600">
-          <span className="font-semibold text-gray-900">{filteredProviders.length}</span> providers found
-        </p>
-      </div>
-
-      {/* Content */}
-      <div className="container mx-auto px-4 pb-8">
-        {viewMode === 'grid' ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProviders.map((provider) => {
-              const badge = getProviderBadge(provider);
-
-              return (
-                <div
-                  key={provider._id}
-                  className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border"
-                >
-                  <div className="p-6">
-                    {/* Header */}
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                          {provider.businessName}
-                        </h3>
-                        <p className="text-gray-500 flex items-center text-sm">
-                          <FaMapMarkerAlt className="mr-1" />
-                          {provider.municipality}, Bataan
-                        </p>
-                      </div>
-                      {badge && (
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${badge.color}`}>
-                          {badge.label}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Rating */}
-                    <div className="flex items-center mb-3">
-                      <div className="flex items-center text-yellow-400 mr-2">
-                        <FaStar />
-                        <span className="ml-1 text-gray-900 font-medium">{provider.rating}</span>
-                      </div>
-                      <span className="text-gray-500 text-sm">({provider.reviewCount} reviews)</span>
-                      {provider.badges.verified && (
-                        <MdVerified className="ml-2 text-blue-500" />
-                      )}
-                    </div>
-
-                    {/* Description */}
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                      {provider.description}
-                    </p>
-
-                    {/* Services */}
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {(provider.services || []).slice(0, 3).map((service, index) => (
-                        <span
-                          key={index}
-                          className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-md"
-                        >
-                          {service}
-                        </span>
-                      ))}
-                      {(provider.services || []).length > 3 && (
-                        <span className="text-xs text-gray-500 px-2 py-1">
-                          +{(provider.services || []).length - 3} more
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Experience */}
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-sm text-gray-600">
-                        {provider.yearsExperience} years experience
-                      </span>
-                    </div>
-
-                    {/* Action */}
-                    <Link
-                      to={`/provider/${provider._id}`}
-                      className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors text-center block"
-                    >
-                      View Profile
-                    </Link>
-                  </div>
-                </div>
-              );
-            })}
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-8">
+        {filteredProviders.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-gray-400 text-6xl mb-4">🔍</div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No providers found</h3>
+            <p className="text-gray-600 mb-6">
+              {providers.length === 0 
+                ? "No providers have registered yet. Be the first to register your business!"
+                : "Try adjusting your search criteria or filters to find more providers."
+              }
+            </p>
+            <Link
+              to="/register-provider"
+              className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Register Your Business
+            </Link>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-            <LeafletMap
-              providers={filteredProviders}
-              onProviderSelect={setSelectedProvider}
-              selectedProvider={selectedProvider}
-              height="600px"
-            />
-          </div>
+          <>
+            {viewMode === 'grid' ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredProviders.map(provider => {
+                  const badge = getProviderBadge(provider);
+                  return (
+                    <div key={provider._id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                      <div className="p-6">
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex-1">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                              {provider.businessName}
+                            </h3>
+                            <p className="text-sm text-gray-600 flex items-center">
+                              <FaMapMarkerAlt className="mr-1" />
+                              {provider.barangay}, {provider.municipality}
+                            </p>
+                          </div>
+                          {badge && (
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${badge.color}`}>
+                              {badge.label}
+                            </span>
+                          )}
+                        </div>
+
+                        <p className="text-gray-700 text-sm mb-4 line-clamp-3">
+                          {provider.description || 'Professional service provider in Bataan.'}
+                        </p>
+
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center">
+                            <FaStar className="text-yellow-400 mr-1" />
+                            <span className="font-medium text-gray-900">
+                              {(provider.rating || 0).toFixed(1)}
+                            </span>
+                            <span className="text-gray-500 text-sm ml-1">
+                              ({provider.reviewCount || 0} reviews)
+                            </span>
+                          </div>
+                          {provider.isVerified && (
+                            <FaShieldAlt className="text-green-500" title="Verified Provider" />
+                          )}
+                        </div>
+
+                        <div className="flex flex-wrap gap-1 mb-4">
+                          {(provider.services || []).slice(0, 3).map((service, index) => (
+                            <span
+                              key={index}
+                              className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                            >
+                              {service}
+                            </span>
+                          ))}
+                          {(provider.services || []).length > 3 && (
+                            <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                              +{(provider.services || []).length - 3} more
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">
+                            {provider.yearsExperience || 0} years experience
+                          </span>
+                          <Link
+                            to={`/provider/${provider._id}`}
+                            className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition-colors"
+                          >
+                            View Profile
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="bg-white rounded-lg shadow-md">
+                <LeafletMap 
+                  providers={filteredProviders}
+                  onProviderSelect={setSelectedProvider}
+                  selectedProvider={selectedProvider}
+                />
+              </div>
+            )}
+          </>
         )}
       </div>
-
-      {/* No Results */}
-      {filteredProviders.length === 0 && (
-        <div className="text-center py-12">
-          <div className="text-gray-400 text-4xl mb-4">🔍</div>
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">No providers found</h3>
-          <p className="text-gray-500 mb-6">Try adjusting your search or filters</p>
-          <button
-            onClick={() => {
-              setSearchTerm('');
-              setSelectedMunicipality('');
-              setSelectedCategory('');
-              setQualityFilter('all');
-            }}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Clear Filters
-          </button>
-        </div>
-      )}
     </div>
   );
 };

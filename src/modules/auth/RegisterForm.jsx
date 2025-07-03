@@ -6,7 +6,8 @@ import { useAuth } from '../../lib/auth.jsx';
 
 const RegisterForm = ({ onToggleMode, initialRole = 'client' }) => {
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -39,16 +40,19 @@ const RegisterForm = ({ onToggleMode, initialRole = 'client' }) => {
 
     try {
       await register({
-        name: formData.name,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        name: `${formData.firstName} ${formData.lastName}`,
         email: formData.email,
         password: formData.password,
+        confirmPassword: formData.confirmPassword,
         phone: formData.phone,
-        role: formData.role
+        userType: formData.role
       });
 
       // Redirect based on role
       if (formData.role === 'provider') {
-        navigate('/dashboard');
+        navigate('/register-provider');
       } else {
         navigate('/');
       }
@@ -61,19 +65,35 @@ const RegisterForm = ({ onToggleMode, initialRole = 'client' }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Full Name
-        </label>
-        <Input
-          name="name"
-          type="text"
-          required
-          value={formData.name}
-          onChange={handleChange}
-          placeholder="Enter your full name"
-          error={!!error}
-        />
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            First Name
+          </label>
+          <Input
+            name="firstName"
+            type="text"
+            required
+            value={formData.firstName}
+            onChange={handleChange}
+            placeholder="Juan"
+            error={!!error}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Last Name
+          </label>
+          <Input
+            name="lastName"
+            type="text"
+            required
+            value={formData.lastName}
+            onChange={handleChange}
+            placeholder="Dela Cruz"
+            error={!!error}
+          />
+        </div>
       </div>
       
       <div>

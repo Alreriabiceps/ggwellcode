@@ -1,5 +1,5 @@
 import React from 'react';
-import AIImageAnalyzer from '../components/AIImageAnalyzer';
+import AIImageAnalyzer from '../modules/ai/components/AIImageAnalyzer';
 
 const AIAnalyzerPage = () => {
   return (

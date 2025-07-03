@@ -35,7 +35,8 @@ const ProviderRegistration = ({ onSuccess }) => {
     specialties: [],
     
     // Business Details
-    yearsInBusiness: '',
+    yearsExperience: '',
+    category: '',
     businessHours: {
       monday: '8:00 AM - 5:00 PM',
       tuesday: '8:00 AM - 5:00 PM',
@@ -98,25 +99,47 @@ const ProviderRegistration = ({ onSuccess }) => {
     try {
       setLoading(true);
       
-      // Prepare the data for submission
+      // Determine primary category from services
+      const primaryCategory = formData.services.length > 0 ? formData.services[0] : 'Other';
+      
+      // Prepare the data for submission to match backend schema
       const submitData = {
-        ...formData,
-        contact: {
-          email: formData.email,
-          phone: formData.phone
-        }
+        businessName: formData.businessName,
+        ownerName: formData.ownerName,
+        email: formData.email,
+        phone: formData.phone,
+        municipality: formData.municipality,
+        barangay: formData.barangay,
+        address: formData.address || '',
+        category: primaryCategory,
+        services: formData.services,
+        specialties: formData.specialties,
+        yearsExperience: parseInt(formData.yearsExperience) || 0,
+        description: formData.description,
+        // Additional fields that might be expected
+        businessHours: formData.businessHours,
+        portfolio: formData.portfolio
       };
 
+      console.log('Submitting provider data:', submitData);
       const response = await providerAPI.register(submitData);
       
-      if (onSuccess) {
-        onSuccess(response.data);
+      if (response.data && response.data.success) {
+        alert('Registration successful! Your profile is now under review.');
+        if (onSuccess) {
+          onSuccess(response.data);
+        } else {
+          navigate('/dashboard');
+        }
       } else {
-        navigate('/dashboard');
+        throw new Error('Registration failed');
       }
     } catch (error) {
       console.error('Registration error:', error);
-      alert(error.response?.data?.message || 'Failed to register. Please try again.');
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.errors?.[0]?.msg || 
+                          'Failed to register. Please try again.';
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -176,14 +199,14 @@ const ProviderRegistration = ({ onSuccess }) => {
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Years in Business
+          Years of Experience
         </label>
         <input
           type="number"
-          value={formData.yearsInBusiness}
-          onChange={(e) => handleInputChange('yearsInBusiness', e.target.value)}
+          value={formData.yearsExperience}
+          onChange={(e) => handleInputChange('yearsExperience', e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="How many years have you been in business?"
+          placeholder="How many years of experience do you have?"
         />
       </div>
     </div>

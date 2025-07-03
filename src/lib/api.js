@@ -1,6 +1,13 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Force API base URL to port 5001
+const API_BASE_URL = 'http://localhost:5001/api';
+
+// Debug log to verify the correct API URL is being used
+console.log('🔗 API Configuration:', {
+  baseURL: API_BASE_URL,
+  timestamp: new Date().toISOString()
+});
 
 // Create axios instance
 const api = axios.create({
@@ -32,14 +39,22 @@ api.interceptors.response.use(
   }
 );
 
+// Create a separate axios instance for public requests
+const publicApi = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
 // Auth API
 export const authAPI = {
-  login: (credentials) => api.post('/auth/login', credentials),
-  register: (userData) => api.post('/auth/register', userData),
+  login: (credentials) => publicApi.post('/auth/login', credentials),
+  register: (userData) => publicApi.post('/auth/register', userData),
   getProfile: () => api.get('/auth/profile'),
   updateProfile: (data) => api.put('/auth/profile', data),
-  forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
-  resetPassword: (token, password) => api.post('/auth/reset-password', { token, password }),
+  forgotPassword: (email) => publicApi.post('/auth/forgot-password', { email }),
+  resetPassword: (token, password) => publicApi.post('/auth/reset-password', { token, password }),
 };
 
 // Provider API

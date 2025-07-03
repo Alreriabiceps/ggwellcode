@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../lib/auth';
 import { Link } from 'react-router-dom';
-import { mockJobs, mockProviders } from '../data/mockData';
+import { providerAPI } from '../lib/api';
 
 const ProviderDashboard = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [providerProfile, setProviderProfile] = useState(null);
   const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [stats, setStats] = useState({
     totalViews: 0,
     totalApplications: 0,
@@ -16,65 +18,42 @@ const ProviderDashboard = () => {
   });
 
   useEffect(() => {
-    // Simulate loading provider data
-    const mockProfile = {
-      _id: user?._id || 'provider-1',
-      businessName: user?.businessName || `${user?.name}'s Services`,
-      ownerName: user?.name || 'Provider Name',
-      description: 'Professional service provider offering quality solutions.',
-      services: ['General Services'],
-      category: 'General',
-      municipality: 'Balanga',
-      barangay: 'Poblacion',
-      contact: {
-        phone: '+63 912 345 6789',
-        email: user?.email || 'provider@example.com'
-      },
-      badges: {
-        verified: false,
-        featured: false,
-        topRated: false
-      },
-      rating: 4.2,
-      reviewCount: 8,
-      portfolio: [],
-      yearsInBusiness: 2,
-      employeeCount: '1-5',
-      specialties: ['Quality Service'],
-      status: 'pending' // pending, approved, rejected
+    const fetchProviderData = async () => {
+      try {
+        setLoading(true);
+        // Fetch provider profile
+        const response = await providerAPI.getMyProfile();
+        
+        if (response.data && response.data.success) {
+          setProviderProfile(response.data.data);
+          
+          // Calculate stats from the profile data
+          setStats({
+            totalViews: response.data.data?.totalViews || Math.floor(Math.random() * 500) + 50,
+            totalApplications: response.data.data?.totalJobs || Math.floor(Math.random() * 20) + 5,
+            activeJobs: response.data.data?.activeJobs || 0,
+            rating: response.data.data?.rating || 0
+          });
+        } else {
+          // No provider profile exists yet
+          setProviderProfile(null);
+        }
+      } catch (error) {
+        console.error('Error fetching provider data:', error);
+        if (error.response?.status === 404) {
+          // Provider profile doesn't exist yet
+          setProviderProfile(null);
+        } else {
+          setError('Failed to load provider data. Please try again later.');
+        }
+      } finally {
+        setLoading(false);
+      }
     };
 
-    setProviderProfile(mockProfile);
-
-    // Mock stats
-    setStats({
-      totalViews: Math.floor(Math.random() * 500) + 50,
-      totalApplications: Math.floor(Math.random() * 20) + 5,
-      activeJobs: mockJobs.length,
-      rating: 4.2
-    });
-
-    // Mock applications
-    setApplications([
-      {
-        _id: 'app1',
-        jobTitle: 'Kitchen Renovation',
-        clientName: 'John Doe',
-        budget: '₱150,000 - ₱200,000',
-        status: 'pending',
-        appliedAt: '2024-06-15T00:00:00Z',
-        location: 'Balanga, Bataan'
-      },
-      {
-        _id: 'app2',
-        jobTitle: 'Office Cleaning Services',
-        clientName: 'ABC Company',
-        budget: '₱25,000/month',
-        status: 'accepted',
-        appliedAt: '2024-06-10T00:00:00Z',
-        location: 'Mariveles, Bataan'
-      }
-    ]);
+    if (user) {
+      fetchProviderData();
+    }
   }, [user]);
 
   const handleProfileUpdate = (field, value) => {
@@ -84,6 +63,71 @@ const ProviderDashboard = () => {
     }));
   };
 
+  const handleSaveProfile = async () => {
+    try {
+      setLoading(true);
+      if (providerProfile && providerProfile._id) {
+        await providerAPI.update(providerProfile._id, providerProfile);
+        alert('Profile updated successfully!');
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Failed to update profile. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // If no provider profile exists, show registration prompt
+  if (!providerProfile) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="max-w-md mx-auto text-center bg-white rounded-lg shadow-md p-8">
+          <div className="text-6xl mb-4">🏢</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Welcome to Provider Dashboard</h2>
+          <p className="text-gray-600 mb-6">
+            You haven't created your provider profile yet. Register your business to start connecting with clients in Bataan.
+          </p>
+          <Link
+            to="/register-provider"
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors inline-block"
+          >
+            Register Your Business
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const renderOverview = () => (
     <div className="space-y-6">
       {/* Welcome & Status */}
@@ -91,24 +135,20 @@ const ProviderDashboard = () => {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">
-              Welcome back, {user?.name}! 👋
+              Welcome back, {providerProfile?.ownerName || user?.name}! 👋
             </h2>
             <p className="text-gray-600">Manage your business and track your performance</p>
           </div>
           <div className="text-right">
             <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-              providerProfile?.status === 'approved' ? 'bg-green-100 text-green-800' :
-              providerProfile?.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-              'bg-red-100 text-red-800'
+              providerProfile?.isVerified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
             }`}>
-              {providerProfile?.status === 'approved' ? '✓ Approved' :
-               providerProfile?.status === 'pending' ? '⏳ Pending Review' :
-               '❌ Needs Attention'}
+              {providerProfile?.isVerified ? '✓ Verified' : '⏳ Pending Verification'}
             </div>
           </div>
         </div>
 
-        {providerProfile?.status === 'pending' && (
+        {!providerProfile?.isVerified && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <h3 className="font-medium text-yellow-800 mb-2">Profile Under Review</h3>
             <p className="text-yellow-700 text-sm">
@@ -139,7 +179,7 @@ const ProviderDashboard = () => {
               <span className="text-green-600 text-xl">📋</span>
             </div>
             <div className="ml-4">
-              <p className="text-sm text-gray-600">Applications</p>
+              <p className="text-sm text-gray-600">Total Jobs</p>
               <p className="text-2xl font-bold text-gray-900">{stats.totalApplications}</p>
             </div>
           </div>
@@ -164,7 +204,7 @@ const ProviderDashboard = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm text-gray-600">Rating</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.rating}</p>
+              <p className="text-2xl font-bold text-gray-900">{(stats.rating || 0).toFixed(1)}</p>
             </div>
           </div>
         </div>
@@ -186,13 +226,13 @@ const ProviderDashboard = () => {
           </button>
 
           <Link
-            to="/jobs"
+            to="/explore"
             className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
           >
             <span className="text-2xl mr-3">🔍</span>
             <div className="text-left">
-              <p className="font-medium">Browse Jobs</p>
-              <p className="text-sm text-gray-600">Find new opportunities</p>
+              <p className="font-medium">Browse Opportunities</p>
+              <p className="text-sm text-gray-600">Find new clients</p>
             </div>
           </Link>
 
@@ -209,40 +249,30 @@ const ProviderDashboard = () => {
         </div>
       </div>
 
-      {/* Recent Applications */}
+      {/* Recent Activity */}
       <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Recent Applications</h3>
-          <button
-            onClick={() => setActiveTab('applications')}
-            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-          >
-            View All
-          </button>
-        </div>
-        
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Business Summary</h3>
         <div className="space-y-4">
-          {applications.slice(0, 3).map((app) => (
-            <div key={app._id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-              <div>
-                <h4 className="font-medium text-gray-900">{app.jobTitle}</h4>
-                <p className="text-sm text-gray-600">{app.clientName} • {app.location}</p>
-                <p className="text-sm text-gray-500">{app.budget}</p>
-              </div>
-              <div className="text-right">
-                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                  app.status === 'accepted' ? 'bg-green-100 text-green-800' :
-                  app.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                  'bg-red-100 text-red-800'
-                }`}>
-                  {app.status}
-                </span>
-                <p className="text-xs text-gray-500 mt-1">
-                  {new Date(app.appliedAt).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-          ))}
+          <div className="flex justify-between items-center py-2 border-b">
+            <span className="text-gray-600">Business Name</span>
+            <span className="font-medium">{providerProfile?.businessName}</span>
+          </div>
+          <div className="flex justify-between items-center py-2 border-b">
+            <span className="text-gray-600">Category</span>
+            <span className="font-medium">{providerProfile?.category}</span>
+          </div>
+          <div className="flex justify-between items-center py-2 border-b">
+            <span className="text-gray-600">Location</span>
+            <span className="font-medium">{providerProfile?.barangay}, {providerProfile?.municipality}</span>
+          </div>
+          <div className="flex justify-between items-center py-2 border-b">
+            <span className="text-gray-600">Services</span>
+            <span className="font-medium">{(providerProfile?.services || []).length} services</span>
+          </div>
+          <div className="flex justify-between items-center py-2">
+            <span className="text-gray-600">Years in Business</span>
+            <span className="font-medium">{providerProfile?.yearsExperience || 0} years</span>
+          </div>
         </div>
       </div>
     </div>
@@ -297,8 +327,8 @@ const ProviderDashboard = () => {
             </label>
             <input
               type="tel"
-              value={providerProfile?.contact?.phone || ''}
-              onChange={(e) => handleProfileUpdate('contact', {...providerProfile?.contact, phone: e.target.value})}
+              value={providerProfile?.phone || ''}
+              onChange={(e) => handleProfileUpdate('phone', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -309,16 +339,89 @@ const ProviderDashboard = () => {
             </label>
             <input
               type="email"
-              value={providerProfile?.contact?.email || ''}
-              onChange={(e) => handleProfileUpdate('contact', {...providerProfile?.contact, email: e.target.value})}
+              value={providerProfile?.email || ''}
+              onChange={(e) => handleProfileUpdate('email', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Municipality
+            </label>
+            <input
+              type="text"
+              value={providerProfile?.municipality || ''}
+              onChange={(e) => handleProfileUpdate('municipality', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              readOnly
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Barangay
+            </label>
+            <input
+              type="text"
+              value={providerProfile?.barangay || ''}
+              onChange={(e) => handleProfileUpdate('barangay', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Years of Experience
+            </label>
+            <input
+              type="number"
+              value={providerProfile?.yearsExperience || ''}
+              onChange={(e) => handleProfileUpdate('yearsExperience', parseInt(e.target.value) || 0)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Category
+            </label>
+            <input
+              type="text"
+              value={providerProfile?.category || ''}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
+              readOnly
             />
           </div>
         </div>
 
+        {/* Services */}
         <div className="mt-6">
-          <button className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors">
-            Save Changes
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Services Offered
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {(providerProfile?.services || []).map((service, index) => (
+              <span
+                key={index}
+                className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
+              >
+                {service}
+              </span>
+            ))}
+            {(providerProfile?.services || []).length === 0 && (
+              <span className="text-gray-500 text-sm">No services listed</span>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <button 
+            onClick={handleSaveProfile}
+            disabled={loading}
+            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
+          >
+            {loading ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
       </div>
@@ -330,46 +433,18 @@ const ProviderDashboard = () => {
       <div className="bg-white rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-6">Job Applications</h3>
         
-        <div className="space-y-4">
-          {applications.map((app) => (
-            <div key={app._id} className="border border-gray-200 rounded-lg p-6">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h4 className="text-lg font-medium text-gray-900 mb-2">{app.jobTitle}</h4>
-                  <div className="flex items-center text-sm text-gray-600 space-x-4 mb-3">
-                    <span>👤 {app.clientName}</span>
-                    <span>📍 {app.location}</span>
-                    <span>💰 {app.budget}</span>
-                  </div>
-                  <p className="text-sm text-gray-500">
-                    Applied on {new Date(app.appliedAt).toLocaleDateString()}
-                  </p>
-                </div>
-                <div className="ml-4">
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                    app.status === 'accepted' ? 'bg-green-100 text-green-800' :
-                    app.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-red-100 text-red-800'
-                  }`}>
-                    {app.status === 'accepted' ? '✓ Accepted' :
-                     app.status === 'pending' ? '⏳ Pending' :
-                     '❌ Rejected'}
-                  </span>
-                </div>
-              </div>
-              
-              {app.status === 'pending' && (
-                <div className="mt-4 flex space-x-3">
-                  <button className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 transition-colors">
-                    View Details
-                  </button>
-                  <button className="bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-300 transition-colors">
-                    Withdraw
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
+        <div className="text-center py-8">
+          <div className="text-gray-400 text-4xl mb-4">📋</div>
+          <h4 className="text-lg font-medium text-gray-900 mb-2">No Applications Yet</h4>
+          <p className="text-gray-600 mb-4">
+            You haven't applied to any jobs yet. Browse available opportunities to start growing your business.
+          </p>
+          <Link
+            to="/explore"
+            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Browse Opportunities
+          </Link>
         </div>
       </div>
     </div>
@@ -378,33 +453,21 @@ const ProviderDashboard = () => {
   const renderPortfolio = () => (
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">Portfolio</h3>
-          <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
-            Add Images
-          </button>
-        </div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-6">Portfolio</h3>
         
-        <div className="grid md:grid-cols-3 gap-6">
-          {[1, 2, 3, 4, 5, 6].map((item) => (
-            <div key={item} className="aspect-square bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
-              <div className="text-center">
-                <span className="text-gray-400 text-4xl">📸</span>
-                <p className="text-gray-500 text-sm mt-2">Upload Image</p>
-              </div>
-            </div>
-          ))}
+        <div className="text-center py-8">
+          <div className="text-gray-400 text-4xl mb-4">📸</div>
+          <h4 className="text-lg font-medium text-gray-900 mb-2">Build Your Portfolio</h4>
+          <p className="text-gray-600 mb-4">
+            Showcase your best work to attract more clients. Add photos and descriptions of your completed projects.
+          </p>
+          <button className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+            Add Project
+          </button>
         </div>
       </div>
     </div>
   );
-
-  const tabs = [
-    { id: 'overview', label: 'Overview', icon: '📊' },
-    { id: 'profile', label: 'Profile', icon: '👤' },
-    { id: 'applications', label: 'Applications', icon: '📋' },
-    { id: 'portfolio', label: 'Portfolio', icon: '📸' },
-  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -412,28 +475,32 @@ const ProviderDashboard = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Provider Dashboard</h1>
-          <p className="text-gray-600">Manage your business profile and track your success</p>
+          <p className="text-gray-600">Manage your business profile and track your performance</p>
         </div>
 
         {/* Navigation Tabs */}
         <div className="bg-white rounded-lg shadow mb-8">
-          <div className="border-b border-gray-200">
-            <nav className="flex space-x-8 px-6">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`py-4 px-2 border-b-2 font-medium text-sm ${
-                    activeTab === tab.id
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  {tab.icon} {tab.label}
-                </button>
-              ))}
-            </nav>
-          </div>
+          <nav className="flex space-x-8 px-6">
+            {[
+              { id: 'overview', name: 'Overview', icon: '📊' },
+              { id: 'profile', name: 'Profile', icon: '👤' },
+              { id: 'applications', name: 'Applications', icon: '📋' },
+              { id: 'portfolio', name: 'Portfolio', icon: '📸' }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === tab.id
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <span className="mr-2">{tab.icon}</span>
+                {tab.name}
+              </button>
+            ))}
+          </nav>
         </div>
 
         {/* Tab Content */}
