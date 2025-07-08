@@ -5,9 +5,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 
-// Core Pages
-import HomePage from './modules/core/pages/HomePage';
-
 // Module Pages
 import ExplorePage from './pages/ExplorePage';
 import ProviderProfile from './pages/ProviderProfile';
@@ -22,8 +19,6 @@ import ProviderRegistration from './modules/registration/ProviderRegistration';
 import AIAnalyzerPage from './pages/AIAnalyzerPage';
 
 // Static Pages
-import AboutPage from './pages/AboutPage';
-import ContactPage from './pages/ContactPage';
 import MyRequestsPage from './pages/MyRequestsPage';
 
 // Context
@@ -37,11 +32,9 @@ function App() {
           <Header />
           <main className="flex-1 pt-16">
             <Routes>
-              <Route path="/" element={<HomePage />} />
+              <Route path="/" element={<AIAnalyzerPage />} />
               <Route path="/explore" element={<ExplorePage />} />
               <Route path="/ai-analyzer" element={<AIAnalyzerPage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/contact" element={<ContactPage />} />
               <Route path="/provider/:id" element={<ProviderProfile />} />
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/dashboard" element={<Dashboard />} />

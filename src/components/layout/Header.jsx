@@ -69,9 +69,7 @@ const Header = () => {
       // Guest/Home navigation
       return [
         { label: 'Home', path: '/' },
-        { label: 'Explore', path: '/explore' },
-        { label: 'About', path: '/about' },
-        { label: 'Contact', path: '/contact' }
+        { label: 'Explore', path: '/explore' }
       ];
     } else if (user.role === 'client') {
       // Client navigation
