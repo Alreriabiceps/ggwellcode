@@ -99,23 +99,52 @@ const ProviderRegistration = ({ onSuccess }) => {
     try {
       setLoading(true);
       
+      // Final validation check
+      if (!isStepValid(4)) {
+        const errors = [];
+        
+        if (!formData.businessName) errors.push('• Business Name is required');
+        if (!formData.ownerName) errors.push('• Owner Name is required');
+        if (!formData.description) errors.push('• Business Description is required');
+        if (!formData.email) errors.push('• Email Address is required');
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errors.push('• Valid Email Address is required');
+        if (!formData.phone) errors.push('• Phone Number is required');
+        else if (!/^(\+639|09)\d{9}$/.test(formData.phone)) errors.push('• Valid Philippine Phone Number is required (09XXXXXXXXX or +639XXXXXXXXX)');
+        if (!formData.municipality) errors.push('• Municipality is required');
+        if (!formData.barangay) errors.push('• Barangay is required');
+        if (formData.services.length === 0) errors.push('• At least one service is required');
+        
+        alert('⚠️ Please fix the following issues before submitting:\n\n' + errors.join('\n'));
+        setLoading(false);
+        return;
+      }
+      
       // Determine primary category from services
-      const primaryCategory = formData.services.length > 0 ? formData.services[0] : 'Other';
+      const primaryCategory = formData.services.length > 0 ? formData.services[0] : 'Construction';
+      
+      // Validate category is valid
+      const validCategories = [
+        'Plumbing', 'Electrical', 'Construction', 'Appliance Repair',
+        'Cleaning', 'Carpentry', 'Landscaping', 'Painting', 'Roofing',
+        'HVAC', 'Security', 'Interior Design', 'Pest Control', 'Moving'
+      ];
+      
+      const finalCategory = validCategories.includes(primaryCategory) ? primaryCategory : 'Construction';
       
       // Prepare the data for submission to match backend schema
       const submitData = {
-        businessName: formData.businessName,
-        ownerName: formData.ownerName,
-        email: formData.email,
-        phone: formData.phone,
+        businessName: formData.businessName.trim(),
+        ownerName: formData.ownerName.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim(),
         municipality: formData.municipality,
-        barangay: formData.barangay,
-        address: formData.address || '',
-        category: primaryCategory,
+        barangay: formData.barangay.trim(),
+        address: formData.address?.trim() || '',
+        category: finalCategory,
         services: formData.services,
         specialties: formData.specialties,
         yearsExperience: parseInt(formData.yearsExperience) || 0,
-        description: formData.description,
+        description: formData.description.trim(),
         // Additional fields that might be expected
         businessHours: formData.businessHours,
         portfolio: formData.portfolio
@@ -125,7 +154,7 @@ const ProviderRegistration = ({ onSuccess }) => {
       const response = await providerAPI.register(submitData);
       
       if (response.data && response.data.success) {
-        alert('Registration successful! Your profile is now under review.');
+        alert('🎉 Registration successful! Your provider profile has been created and is now under review. You will be notified once it\'s approved.');
         if (onSuccess) {
           onSuccess(response.data);
         } else {
@@ -136,9 +165,18 @@ const ProviderRegistration = ({ onSuccess }) => {
       }
     } catch (error) {
       console.error('Registration error:', error);
-      const errorMessage = error.response?.data?.message || 
-                          error.response?.data?.errors?.[0]?.msg || 
-                          'Failed to register. Please try again.';
+      let errorMessage = 'Failed to register. Please try again.';
+      
+      if (error.response?.data?.errors && Array.isArray(error.response.data.errors)) {
+        // Handle validation errors
+        const validationErrors = error.response.data.errors.map(err => err.msg || err.message).join(', ');
+        errorMessage = `Validation failed: ${validationErrors}`;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       alert(errorMessage);
     } finally {
       setLoading(false);
@@ -197,18 +235,30 @@ const ProviderRegistration = ({ onSuccess }) => {
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Years of Experience
-        </label>
-        <input
-          type="number"
-          value={formData.yearsExperience}
-          onChange={(e) => handleInputChange('yearsExperience', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="How many years of experience do you have?"
-        />
-      </div>
+              <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Years of Experience (0-50 years)
+          </label>
+          <input
+            type="number"
+            min="0"
+            max="50"
+            value={formData.yearsExperience}
+            onChange={(e) => {
+              const value = parseInt(e.target.value);
+              if (value >= 0 && value <= 50) {
+                handleInputChange('yearsExperience', e.target.value);
+              } else if (value > 50) {
+                handleInputChange('yearsExperience', '50');
+              } else {
+                handleInputChange('yearsExperience', '0');
+              }
+            }}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="How many years of experience do you have? (0-50)"
+          />
+          <p className="text-xs text-gray-500 mt-1">Maximum 50 years allowed</p>
+        </div>
     </div>
   );
 
@@ -240,19 +290,28 @@ const ProviderRegistration = ({ onSuccess }) => {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Phone Number *
+            Phone Number * (Philippine format)
           </label>
           <div className="relative">
             <PhoneIcon className="h-5 w-5 text-gray-400 absolute left-3 top-3" />
             <input
               type="tel"
               value={formData.phone}
-              onChange={(e) => handleInputChange('phone', e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Allow only Philippine phone number format
+                if (value === '' || /^(\+639|09|9)\d{0,9}$/.test(value)) {
+                  handleInputChange('phone', value);
+                }
+              }}
               className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="+63 9XX XXX XXXX"
+              placeholder="09XXXXXXXXX or +639XXXXXXXXX"
               required
             />
           </div>
+          <p className="text-xs text-gray-500 mt-1">
+            Format: 09XXXXXXXXX or +639XXXXXXXXX (Philippine numbers only)
+          </p>
         </div>
       </div>
 
@@ -453,15 +512,38 @@ const ProviderRegistration = ({ onSuccess }) => {
   );
 
   const isStepValid = (step) => {
+    const isValidPhilippinePhone = (phone) => {
+      return /^(\+639|09)\d{9}$/.test(phone);
+    };
+    
+    const isValidEmail = (email) => {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    };
+    
     switch (step) {
       case 1:
         return formData.businessName && formData.ownerName && formData.description;
       case 2:
-        return formData.email && formData.phone && formData.municipality && formData.barangay;
+        return formData.email && 
+               isValidEmail(formData.email) &&
+               formData.phone && 
+               isValidPhilippinePhone(formData.phone) &&
+               formData.municipality && 
+               formData.barangay;
       case 3:
         return formData.services.length > 0;
       case 4:
-        return true;
+        // Final validation - check all required fields
+        return formData.businessName && 
+               formData.ownerName && 
+               formData.description && 
+               formData.email && 
+               isValidEmail(formData.email) &&
+               formData.phone && 
+               isValidPhilippinePhone(formData.phone) &&
+               formData.municipality && 
+               formData.barangay &&
+               formData.services.length > 0;
       default:
         return false;
     }

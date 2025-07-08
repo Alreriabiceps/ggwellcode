@@ -1,127 +1,428 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700;800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Apple Design System - Base Styles */
 @layer base {
-  html {
-    font-family: 'Inter', system-ui, sans-serif;
+  * {
+    @apply border-gray-200;
   }
   
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Poppins', system-ui, sans-serif;
+  body {
+    @apply bg-gray-50 text-gray-900 font-system antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+  
+  /* Apple-style scrollbar */
+  ::-webkit-scrollbar {
+    @apply w-2 h-2;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400;
+  }
+  
+  /* Focus styles */
+  :focus {
+    @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+  }
+  
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      @apply !transition-none !animate-none;
+    }
   }
 }
 
+/* Apple Design System - Component Styles */
 @layer components {
+  
+  /* ===================
+     BUTTONS - Apple Style
+     =================== */
+  
   .btn {
-    @apply inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-apple font-medium text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
   }
   
   .btn-primary {
-    @apply btn bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500;
+    @apply bg-blue-500 text-white hover:bg-blue-600 focus:ring-blue-500 shadow-apple;
   }
   
   .btn-secondary {
-    @apply btn bg-secondary-100 text-secondary-700 hover:bg-secondary-200 focus:ring-secondary-500;
-}
-
+    @apply bg-gray-100 text-gray-900 hover:bg-gray-150 focus:ring-gray-400 border border-gray-200;
+  }
+  
+  .btn-outline {
+    @apply bg-transparent text-blue-500 border border-blue-500 hover:bg-blue-50 focus:ring-blue-500;
+  }
+  
+  .btn-ghost {
+    @apply bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-400;
+  }
+  
   .btn-success {
-    @apply btn bg-success-600 text-white hover:bg-success-700 focus:ring-success-500;
+    @apply bg-green-500 text-white hover:bg-green-600 focus:ring-green-500 shadow-apple;
   }
   
   .btn-warning {
-    @apply btn bg-warning-600 text-white hover:bg-warning-700 focus:ring-warning-500;
-}
+    @apply bg-orange-500 text-white hover:bg-orange-600 focus:ring-orange-500 shadow-apple;
+  }
   
   .btn-error {
-    @apply btn bg-error-600 text-white hover:bg-error-700 focus:ring-error-500;
-}
-
-  .btn-outline {
-    @apply btn border-2 border-primary-600 text-primary-600 hover:bg-primary-600 hover:text-white focus:ring-primary-500;
-}
-
+    @apply bg-red-500 text-white hover:bg-red-600 focus:ring-red-500 shadow-apple;
+  }
+  
+  /* Button sizes */
   .btn-sm {
-    @apply px-3 py-1.5 text-xs;
+    @apply px-4 py-2 text-sm rounded-apple-sm;
   }
   
   .btn-lg {
-    @apply px-6 py-3 text-base;
-}
-
+    @apply px-8 py-4 text-lg rounded-apple-lg;
+  }
+  
+  .btn-xl {
+    @apply px-10 py-5 text-xl rounded-apple-xl;
+  }
+  
+  /* ===================
+     CARDS - Apple Style
+     =================== */
+  
   .card {
-    @apply bg-white rounded-lg shadow-soft border border-secondary-200 overflow-hidden;
+    @apply bg-white rounded-apple-lg shadow-apple border border-gray-200;
+  }
+  
+  .card-elevated {
+    @apply bg-white rounded-apple-lg shadow-apple-md border border-gray-200;
+  }
+  
+  .card-minimal {
+    @apply bg-white rounded-apple-lg border border-gray-200;
+  }
+  
+  .card-glass {
+    @apply bg-white/80 backdrop-blur-apple rounded-apple-lg border border-gray-200/50;
   }
   
   .card-header {
-    @apply px-6 py-4 border-b border-secondary-200 bg-secondary-50;
+    @apply p-4 md:p-6 border-b border-gray-200;
   }
   
   .card-body {
-    @apply px-6 py-4;
+    @apply p-4 md:p-6;
   }
   
   .card-footer {
-    @apply px-6 py-4 border-t border-secondary-200 bg-secondary-50;
+    @apply p-4 md:p-6 border-t border-gray-200 bg-gray-50 rounded-b-apple-lg;
   }
+  
+  /* ===================
+     INPUTS - Apple Style
+     =================== */
   
   .input {
-    @apply block w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm placeholder-secondary-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500;
-}
+    @apply w-full px-3 py-2.5 sm:px-4 sm:py-3 text-sm sm:text-base bg-gray-100 border border-gray-200 rounded-apple placeholder-gray-500 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 transition-all duration-200;
+  }
   
   .input-error {
-    @apply border-error-300 text-error-900 placeholder-error-300 focus:ring-error-500 focus:border-error-500;
+    @apply border-red-500 focus:border-red-500 focus:ring-red-500;
   }
   
-  .badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  .input-success {
+    @apply border-green-500 focus:border-green-500 focus:ring-green-500;
   }
   
-  .badge-primary {
-    @apply badge bg-primary-100 text-primary-800;
+  .input-large {
+    @apply px-5 py-4 text-lg rounded-apple-lg;
   }
   
-  .badge-success {
-    @apply badge bg-success-100 text-success-800;
+  .input-small {
+    @apply px-3 py-2 text-sm rounded-apple-sm;
   }
   
-  .badge-warning {
-    @apply badge bg-warning-100 text-warning-800;
+  /* ===================
+     NAVIGATION - Apple Style
+     =================== */
+  
+  .nav-primary {
+    @apply bg-white/80 backdrop-blur-apple border-b border-gray-200;
   }
   
-  .badge-error {
-    @apply badge bg-error-100 text-error-800;
-}
-
-  .badge-secondary {
-    @apply badge bg-secondary-100 text-secondary-800;
-  }
-}
-
-@layer utilities {
-  .text-gradient {
-    @apply bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent;
+  .nav-link {
+    @apply px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-apple transition-colors duration-200;
   }
   
-  .bg-gradient-primary {
-    @apply bg-gradient-to-r from-primary-500 to-primary-700;
+  .nav-link-active {
+    @apply text-blue-500 bg-blue-50;
   }
   
-  .bg-gradient-secondary {
-    @apply bg-gradient-to-r from-secondary-500 to-secondary-700;
+  /* ===================
+     TYPOGRAPHY - Apple Style (More Compact)
+     =================== */
+  
+  .text-display {
+    @apply text-4xl md:text-5xl font-bold text-gray-900 leading-tight tracking-tight;
   }
   
-  .shadow-glow {
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
+  .text-headline {
+    @apply text-3xl md:text-4xl font-semibold text-gray-900 leading-tight tracking-tight;
   }
   
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  .text-title {
+    @apply text-xl md:text-2xl font-semibold text-gray-900 leading-snug;
   }
   
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
+  .text-subtitle {
+    @apply text-lg font-medium text-gray-700 leading-relaxed;
+  }
+  
+  .text-body {
+    @apply text-base text-gray-600 leading-relaxed;
+  }
+  
+  .text-caption {
+    @apply text-sm text-gray-500 leading-normal;
+  }
+  
+  /* ===================
+     ALERTS - Apple Style
+     =================== */
+  
+  .alert {
+    @apply p-4 rounded-apple-lg border-l-4;
+  }
+  
+  .alert-info {
+    @apply bg-blue-50 border-blue-500 text-blue-800;
+  }
+  
+  .alert-success {
+    @apply bg-green-50 border-green-500 text-green-800;
+  }
+  
+  .alert-warning {
+    @apply bg-orange-50 border-orange-500 text-orange-800;
+  }
+  
+  .alert-error {
+    @apply bg-red-50 border-red-500 text-red-800;
+  }
+  
+  /* ===================
+     LOADING - Apple Style
+     =================== */
+  
+  .loading-spinner {
+    @apply inline-block w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin;
+  }
+  
+  .loading-dots {
+    @apply flex gap-1;
+  }
+  
+  .loading-dot {
+    @apply w-2 h-2 bg-gray-400 rounded-full animate-pulse;
+  }
+  
+  /* ===================
+     MODALS - Apple Style
+     =================== */
+  
+  .modal-overlay {
+    @apply fixed inset-0 bg-black/20 backdrop-blur-apple-md z-50;
+  }
+  
+  .modal-container {
+    @apply fixed inset-0 z-50 flex items-center justify-center p-4;
+  }
+  
+  .modal-content {
+    @apply bg-white rounded-apple-xl shadow-apple-xl border border-gray-200 w-full max-w-md transform transition-all duration-300 scale-100 opacity-100;
+  }
+  
+  .modal-header {
+    @apply p-6 border-b border-gray-200;
+  }
+  
+  .modal-body {
+    @apply p-6;
+  }
+  
+  .modal-footer {
+    @apply p-6 border-t border-gray-200 bg-gray-50 rounded-b-apple-xl;
+  }
+  
+  /* ===================
+     FORMS - Apple Style
+     =================== */
+  
+  .form-group {
+    @apply space-y-2;
+  }
+  
+  .form-label {
+    @apply block text-sm font-medium text-gray-700;
+  }
+  
+  .form-help {
+    @apply text-sm text-gray-500;
+  }
+  
+  .form-error {
+    @apply text-sm text-red-600;
+  }
+  
+  .form-success {
+    @apply text-sm text-green-600;
+  }
+  
+  /* ===================
+     SECTIONS - Apple Style (More Compact)
+     =================== */
+  
+  .section {
+    @apply py-8 sm:py-12 md:py-16;
+  }
+  
+  .section-hero {
+    @apply py-16 md:py-20 lg:py-24;
+  }
+  
+  .section-tight {
+    @apply py-6 md:py-8;
+  }
+  
+  .section-loose {
+    @apply py-20 md:py-24;
+  }
+  
+  .section-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  .section-narrow {
+    @apply max-w-4xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  /* ===================
+     UTILITIES - Apple Style
+     =================== */
+  
+  .glass {
+    @apply bg-white/80 backdrop-blur-apple border border-gray-200/50;
+  }
+  
+  .glass-strong {
+    @apply bg-white/90 backdrop-blur-apple-lg border border-gray-200/60;
+  }
+  
+  .hover-lift {
+    @apply transition-transform duration-200 hover:scale-105;
+  }
+  
+  .hover-glow {
+    @apply transition-shadow duration-200 hover:shadow-apple-lg;
+  }
+  
+  .interactive {
+    @apply cursor-pointer select-none transition-all duration-200;
+  }
+  
+  .fade-in {
+    @apply animate-fade-in;
+  }
+  
+  .slide-up {
+    @apply animate-slide-up;
+  }
+  
+  .scale-in {
+    @apply animate-scale-in;
+  }
+  
+  /* ===================
+     RESPONSIVE UTILITIES
+     =================== */
+  
+  .container-apple {
+    @apply max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8;
+  }
+  
+  .grid-apple {
+    @apply grid gap-4 md:gap-6 lg:gap-8;
+  }
+  
+  .flex-apple {
+    @apply flex items-center gap-3;
+  }
+  
+  .stack-apple {
+    @apply space-y-4;
+  }
+  
+  .divider-apple {
+    @apply border-t border-gray-200 my-8;
+  }
+  
+  /* Mobile Optimization */
+  @media (max-width: 640px) {
+    .modal-container {
+      @apply mx-2 my-4 w-auto;
+    }
+    
+    .grid-apple {
+      @apply gap-3;
+    }
+    
+    .card-body {
+      @apply p-3;
+    }
+    
+    .card-header {
+      @apply p-3;
+    }
+    
+    .card-footer {
+      @apply p-3;
+    }
+    
+    /* Ensure no horizontal overflow */
+    * {
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    
+    /* Force form elements to be responsive */
+    .input, input, select, textarea {
+      min-width: 0;
+      width: 100%;
+    }
+    
+    /* Compact form spacing */
+    .form-group {
+      @apply space-y-1;
+    }
+    
+    /* Smaller buttons on mobile */
+    .btn {
+      @apply px-3 py-2 text-xs;
+    }
+    
+    .btn-lg {
+      @apply px-4 py-2.5 text-sm;
+    }
   }
 }

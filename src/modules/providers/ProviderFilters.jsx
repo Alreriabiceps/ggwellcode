@@ -1,6 +1,6 @@
 import React from 'react';
 import { Input } from '../../components/ui/Input';
-import { Button } from '../../components/ui/Button';
+import Button from '../../components/ui/Button';
 import { SERVICE_CATEGORIES, BATAAN_MUNICIPALITIES } from '../../lib/utils';
 
 const ProviderFilters = ({ filters, onFilterChange, onClearFilters }) => {

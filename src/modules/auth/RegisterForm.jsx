@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
+import Button from '../../components/ui/Button';
+import { Input, Select } from '../../components/ui/Input';
 import { useAuth } from '../../lib/auth.jsx';
+import { FaEye, FaEyeSlash, FaEnvelope, FaLock, FaUser, FaPhone, FaUsers } from 'react-icons/fa';
 
 const RegisterForm = ({ onToggleMode, initialRole = 'client' }) => {
   const [formData, setFormData] = useState({
@@ -16,6 +17,8 @@ const RegisterForm = ({ onToggleMode, initialRole = 'client' }) => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -34,6 +37,13 @@ const RegisterForm = ({ onToggleMode, initialRole = 'client' }) => {
 
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+
+    // Validate phone number format if provided
+    if (formData.phone && !/^(\+639|09)\d{9}$/.test(formData.phone)) {
+      setError('Please enter a valid Philippine phone number (09XXXXXXXXX or +639XXXXXXXXX)');
       setLoading(false);
       return;
     }
@@ -57,17 +67,39 @@ const RegisterForm = ({ onToggleMode, initialRole = 'client' }) => {
         navigate('/');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
+      console.error('Registration error:', err);
+      let errorMessage = 'Registration failed';
+      
+      if (err.response?.data?.errors && Array.isArray(err.response.data.errors)) {
+        // Handle validation errors from backend
+        const validationErrors = err.response.data.errors.map(error => error.msg || error.message);
+        errorMessage = validationErrors.join(', ');
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
+  const isFormValid = () => {
+    return formData.firstName && 
+           formData.lastName && 
+           formData.email && 
+           formData.password && 
+           formData.confirmPassword &&
+           formData.password === formData.confirmPassword;
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+    <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+      
+      {/* Name Fields */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
+        <div className="space-y-1 sm:space-y-2">
+          <label className="block text-xs sm:text-sm font-medium text-gray-700">
             First Name
           </label>
           <Input
@@ -77,11 +109,13 @@ const RegisterForm = ({ onToggleMode, initialRole = 'client' }) => {
             value={formData.firstName}
             onChange={handleChange}
             placeholder="Juan"
-            error={!!error}
+            leftIcon={FaUser}
+            variant={error ? 'error' : 'default'}
+            fullWidth
           />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+        <div className="space-y-1 sm:space-y-2">
+          <label className="block text-xs sm:text-sm font-medium text-gray-700">
             Last Name
           </label>
           <Input
@@ -91,13 +125,16 @@ const RegisterForm = ({ onToggleMode, initialRole = 'client' }) => {
             value={formData.lastName}
             onChange={handleChange}
             placeholder="Dela Cruz"
-            error={!!error}
+            leftIcon={FaUser}
+            variant={error ? 'error' : 'default'}
+            fullWidth
           />
         </div>
       </div>
       
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+      {/* Email Field */}
+      <div className="space-y-1 sm:space-y-2">
+        <label className="block text-xs sm:text-sm font-medium text-gray-700">
           Email Address
         </label>
         <Input
@@ -107,87 +144,149 @@ const RegisterForm = ({ onToggleMode, initialRole = 'client' }) => {
           value={formData.email}
           onChange={handleChange}
           placeholder="Enter your email"
-          error={!!error}
+          leftIcon={FaEnvelope}
+          variant={error ? 'error' : 'default'}
+          fullWidth
         />
       </div>
       
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+      {/* Phone Field */}
+      <div className="space-y-1 sm:space-y-2">
+        <label className="block text-xs sm:text-sm font-medium text-gray-700">
           Phone Number
         </label>
         <Input
           name="phone"
           type="tel"
           value={formData.phone}
-          onChange={handleChange}
-          placeholder="Enter your phone number"
-          error={!!error}
+          onChange={(e) => {
+            const value = e.target.value;
+            // Allow only Philippine phone number format
+            if (value === '' || /^(\+639|09|9)\d{0,9}$/.test(value)) {
+              handleChange(e);
+            }
+          }}
+          placeholder="09XXXXXXXXX or +639XXXXXXXXX"
+          leftIcon={FaPhone}
+          variant={error ? 'error' : 'default'}
+          helpText="Format: 09XXXXXXXXX or +639XXXXXXXXX (Philippine numbers only)"
+          fullWidth
         />
       </div>
       
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+      {/* Account Type */}
+      <div className="space-y-1 sm:space-y-2">
+        <label className="block text-xs sm:text-sm font-medium text-gray-700">
           Account Type
         </label>
-        <select
+        <Select
           name="role"
           value={formData.role}
           onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          leftIcon={FaUsers}
+          fullWidth
         >
           <option value="client">Client (Looking for services)</option>
           <option value="provider">Service Provider</option>
-        </select>
+        </Select>
       </div>
       
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Password
-        </label>
-        <Input
-          name="password"
-          type="password"
-          required
-          value={formData.password}
-          onChange={handleChange}
-          placeholder="Enter your password"
-          error={!!error}
-        />
+      {/* Password Fields */}
+      <div className="space-y-3 sm:space-y-4">
+        <div className="space-y-1 sm:space-y-2">
+          <label className="block text-xs sm:text-sm font-medium text-gray-700">
+            Password
+          </label>
+          <Input
+            name="password"
+            type={showPassword ? 'text' : 'password'}
+            required
+            value={formData.password}
+            onChange={handleChange}
+            placeholder="Enter your password"
+            leftIcon={FaLock}
+            rightIcon={showPassword ? FaEyeSlash : FaEye}
+            onRightIconClick={() => setShowPassword(!showPassword)}
+            variant={error ? 'error' : 'default'}
+            fullWidth
+          />
+        </div>
+        
+        <div className="space-y-1 sm:space-y-2">
+          <label className="block text-xs sm:text-sm font-medium text-gray-700">
+            Confirm Password
+          </label>
+          <Input
+            name="confirmPassword"
+            type={showConfirmPassword ? 'text' : 'password'}
+            required
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            placeholder="Confirm your password"
+            leftIcon={FaLock}
+            rightIcon={showConfirmPassword ? FaEyeSlash : FaEye}
+            onRightIconClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            variant={error ? 'error' : 'default'}
+            fullWidth
+          />
+        </div>
       </div>
       
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Confirm Password
-        </label>
-        <Input
-          name="confirmPassword"
-          type="password"
-          required
-          value={formData.confirmPassword}
-          onChange={handleChange}
-          placeholder="Confirm your password"
-          error={!!error}
-        />
-      </div>
-      
+      {/* Error Message */}
       {error && (
-        <div className="text-red-600 text-sm text-center p-2 bg-red-50 rounded">
-          {error}
+        <div className="bg-red-50 border border-red-200 text-red-800 px-3 py-2 sm:px-4 sm:py-3 rounded-apple-lg text-xs sm:text-sm animate-slide-down">
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            {error}
+          </div>
         </div>
       )}
       
-      <Button type="submit" className="w-full" loading={loading}>
+      {/* Terms & Conditions */}
+      <div className="bg-gray-50 border border-gray-200 rounded-apple-lg p-3 sm:p-4 text-xs sm:text-sm text-gray-600">
+        <p className="mb-2">
+          By creating an account, you agree to our{' '}
+          <a href="#" className="text-blue-600 hover:underline">Terms of Service</a>
+          {' '}and acknowledge that you have read our{' '}
+          <a href="#" className="text-blue-600 hover:underline">Privacy Policy</a>.
+        </p>
+      </div>
+      
+      {/* Submit Button */}
+      <Button 
+        type="submit" 
+        size="lg"
+        loading={loading}
+        disabled={!isFormValid()}
+        fullWidth
+      >
         Create Account
       </Button>
       
+      {/* Divider */}
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-300"></div>
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="px-2 bg-white text-gray-500">or</span>
+        </div>
+      </div>
+      
+      {/* Toggle Mode */}
       <div className="text-center">
-        <button
-          type="button"
-          onClick={onToggleMode}
-          className="text-blue-600 hover:underline text-sm"
-        >
-          Already have an account? Sign in
-        </button>
+        <p className="text-xs sm:text-sm text-gray-600">
+          Already have an account?{' '}
+          <button
+            type="button"
+            onClick={onToggleMode}
+            className="font-medium text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+          >
+            Sign in now
+          </button>
+        </p>
       </div>
     </form>
   );

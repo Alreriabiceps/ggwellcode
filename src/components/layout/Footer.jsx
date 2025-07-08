@@ -5,83 +5,39 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-gray-900 text-white py-12">
+    <footer className="bg-gray-900 text-white py-8">
       <div className="container mx-auto px-4">
-        <div className="grid md:grid-cols-4 gap-8">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-6">
           {/* Brand */}
-          <div>
-            <h3 className="text-xl font-bold mb-4">🏗️ Rekomendito</h3>
-            <p className="text-gray-300 text-sm">
-              Smart Provider Discovery Platform for Bataan Province.
-            </p>
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold">R</span>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold">Rekomendito</h3>
+              <p className="text-gray-400 text-sm">Smart Provider Discovery</p>
+            </div>
           </div>
           
-          {/* Quick Links */}
-          <div>
-            <h4 className="font-semibold mb-4">Quick Links</h4>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link to="/" className="text-gray-300 hover:text-white transition-colors">
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link to="/explore" className="text-gray-300 hover:text-white transition-colors">
-                  Explore Providers
-                </Link>
-              </li>
-              <li>
-                <Link to="/jobs" className="text-gray-300 hover:text-white transition-colors">
-                  Post a Job
-                </Link>
-              </li>
-              <li>
-                <Link to="/auth" className="text-gray-300 hover:text-white transition-colors">
-                  Sign Up
-                </Link>
-              </li>
-            </ul>
-          </div>
-          
-          {/* For Providers */}
-          <div>
-            <h4 className="font-semibold mb-4">For Providers</h4>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link to="/auth?mode=provider" className="text-gray-300 hover:text-white transition-colors">
-                  Become a Provider
-                </Link>
-              </li>
-              <li>
-                <Link to="/dashboard" className="text-gray-300 hover:text-white transition-colors">
-                  Provider Dashboard
-                </Link>
-              </li>
-              <li>
-                <span className="text-gray-300">Get Verified</span>
-              </li>
-              <li>
-                <span className="text-gray-300">AI-Powered Matching</span>
-              </li>
-            </ul>
-          </div>
-          
-          {/* Contact */}
-          <div>
-            <h4 className="font-semibold mb-4">Contact</h4>
-            <ul className="space-y-2 text-sm text-gray-300">
-              <li>📧 support@rekomendito.ph</li>
-              <li>📱 +63 XXX XXX XXXX</li>
-              <li>📍 Bataan Province, Philippines</li>
-            </ul>
+          {/* Links */}
+          <div className="flex flex-wrap gap-6 text-sm">
+            <Link to="/" className="text-gray-300 hover:text-white transition-colors">
+              Home
+            </Link>
+            <Link to="/explore" className="text-gray-300 hover:text-white transition-colors">
+              Explore
+            </Link>
+            <Link to="/auth" className="text-gray-300 hover:text-white transition-colors">
+              Sign Up
+            </Link>
+            <Link to="/register-provider" className="text-gray-300 hover:text-white transition-colors">
+              Become Provider
+            </Link>
           </div>
         </div>
         
-        <div className="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-300">
-          <p>&copy; {currentYear} Rekomendito. All rights reserved.</p>
-          <p className="mt-2">
-            Built with ❤️ for the people of Bataan
-          </p>
+        <div className="border-t border-gray-700 mt-6 pt-6 text-center text-sm text-gray-400">
+          <p>&copy; {currentYear} Rekomendito. All rights reserved. Built for Bataan Province.</p>
         </div>
       </div>
     </footer>

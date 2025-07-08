@@ -1,347 +1,280 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { providerAPI } from '../lib/api';
-import qualityAI from '../lib/ai';
+import { useAuth } from '../lib/auth';
+import { Link } from 'react-router-dom';
 import { 
-  FaBolt, 
-  FaStar, 
+  FaEdit, 
+  FaUser, 
   FaMapMarkerAlt, 
   FaPhone, 
   FaEnvelope, 
-  FaGlobe,
-  FaCheckCircle
+  FaStar, 
+  FaTools, 
+  FaArrowLeft
 } from 'react-icons/fa';
 
 const ProviderProfile = () => {
-  const { id } = useParams();
-  const [provider, setProvider] = useState(null);
+  const { user } = useAuth();
+  const [providerProfile, setProviderProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [aiValueProp, setAiValueProp] = useState('');
-  const [loadingAI, setLoadingAI] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    const fetchProvider = async () => {
-      try {
-        setLoading(true);
-        console.log('🔍 Looking for provider with ID:', id);
-        
-        const response = await providerAPI.getById(id);
-        
-        if (response.data && response.data.success) {
-          const foundProvider = response.data.data;
-          console.log('✅ Provider found:', foundProvider.businessName);
-          setProvider(foundProvider);
-          
-          // Load AI value proposition
-          loadAIValueProp(foundProvider);
-        } else {
-          console.log('❌ Provider not found with ID:', id);
-          setError('Provider not found');
+    // Simulate loading provider profile data
+    setTimeout(() => {
+      setProviderProfile({
+        businessName: "Elite Construction Solutions",
+        ownerName: user?.name || "John Doe",
+        description: "Premium construction and renovation services with over 5 years of excellence in Bataan. Specializing in residential and commercial projects.",
+        specialties: ["Construction", "Renovation", "Electrical", "Plumbing"],
+        location: "Balanga City, Bataan",
+        isVerified: true,
+        rating: 4.8,
+        completedJobs: 47,
+        yearsExperience: 5,
+        responseTime: "2 hours",
+        contactInfo: {
+          phone: "+63-912-3456-789",
+          email: user?.email || "contact@example.com"
         }
-      } catch (error) {
-        console.error('Error fetching provider:', error);
-        if (error.response?.status === 404) {
-          setError('Provider not found');
-        } else {
-          setError('Failed to load provider. Please try again later.');
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
+      });
+      setLoading(false);
+    }, 1000);
+  }, [user]);
 
-    if (id) {
-      fetchProvider();
-    }
-  }, [id]);
-
-  const loadAIValueProp = async (providerData) => {
-    setLoadingAI(true);
-    try {
-      const valueProp = await qualityAI.generateValueProposition(providerData);
-      setAiValueProp(valueProp);
-    } catch (error) {
-      console.error('AI Enhancement Error:', error);
-      setAiValueProp(`${providerData.businessName} brings ${providerData.yearsExperience || 0} years of professional experience in ${(providerData.category || '').toLowerCase()} services. With a ${(providerData.rating || 0).toFixed(1)}-star rating${providerData.isVerified ? ' and verified status' : ''}, they deliver quality work that clients trust and recommend.`);
-    } finally {
-      setLoadingAI(false);
-    }
-  };
-
-  const handleContactClick = (type, value) => {
-    switch (type) {
-      case 'phone':
-        window.open(`tel:${value}`, '_self');
-        break;
-      case 'email':
-        window.open(`mailto:${value}`, '_self');
-        break;
-      case 'website':
-        window.open(value, '_blank');
-        break;
-      default:
-        break;
-    }
+  const handleSaveProfile = () => {
+    // Handle save logic here
+    setIsEditing(false);
+    // Show success message
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading provider...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !provider) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-red-600 text-4xl mb-4">⚠️</div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Provider Not Found</h1>
-          <p className="text-gray-600 mb-6">{error || 'The provider you are looking for does not exist.'}</p>
-          <Link
-            to="/explore"
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Back to Explore
-          </Link>
+          <div className="animate-spin w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600 text-lg">Loading your profile...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          
-          {/* Header */}
-          <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <h1 className="text-2xl font-bold text-gray-900">{provider.businessName}</h1>
-                  {provider.isVerified && (
-                    <FaCheckCircle className="text-blue-500" title="Verified Provider" />
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Link
+                to="/dashboard"
+                className="mr-4 p-2 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 text-gray-600 hover:text-blue-600"
+              >
+                <FaArrowLeft className="text-xl" />
+              </Link>
+              <div>
+                <h1 className="text-4xl font-bold text-gray-900 mb-2">Business Profile</h1>
+                <p className="text-gray-600 text-lg">Manage your business information and settings</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setIsEditing(!isEditing)}
+              className="flex items-center bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+            >
+              <FaEdit className="mr-2" />
+              {isEditing ? 'Cancel' : 'Edit Profile'}
+            </button>
+          </div>
+        </div>
+
+        {/* Profile Content */}
+        <div className="space-y-8">
+          {/* Business Profile Card */}
+          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Basic Info */}
+              <div className="lg:col-span-2 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Business Name</label>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={providerProfile?.businessName}
+                        onChange={(e) => setProviderProfile(prev => ({...prev, businessName: e.target.value}))}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    ) : (
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <p className="text-gray-900 font-medium">{providerProfile?.businessName}</p>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Owner Name</label>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={providerProfile?.ownerName}
+                        onChange={(e) => setProviderProfile(prev => ({...prev, ownerName: e.target.value}))}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    ) : (
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <p className="text-gray-900 font-medium">{providerProfile?.ownerName}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Business Description</label>
+                  {isEditing ? (
+                    <textarea
+                      value={providerProfile?.description}
+                      onChange={(e) => setProviderProfile(prev => ({...prev, description: e.target.value}))}
+                      rows={4}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  ) : (
+                    <div className="p-4 bg-gray-50 rounded-lg">
+                      <p className="text-gray-900">{providerProfile?.description}</p>
+                    </div>
                   )}
                 </div>
-                <p className="text-gray-600 flex items-center mb-2">
-                  <FaMapMarkerAlt className="mr-2" />
-                  {provider.barangay}, {provider.municipality}, Bataan
-                </p>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center text-yellow-400">
-                    <FaStar className="mr-1" />
-                    <span className="text-gray-900 font-medium">{(provider.rating || 0).toFixed(1)}</span>
-                    <span className="text-gray-500 ml-1">({provider.reviewCount || 0} reviews)</span>
-                  </div>
-                  <span className="text-gray-600">{provider.yearsExperience || 0} years experience</span>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Specialties</label>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={providerProfile?.specialties?.join(', ')}
+                      onChange={(e) => setProviderProfile(prev => ({...prev, specialties: e.target.value.split(', ')}))}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Separate with commas"
+                    />
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {providerProfile?.specialties?.map((specialty, index) => (
+                        <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                          <FaTools className="inline mr-1" />
+                          {specialty}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3">
-                {provider.phone && (
-                  <button
-                    onClick={() => handleContactClick('phone', provider.phone)}
-                    className="flex items-center justify-center bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    <FaPhone className="mr-2" />
-                    Call
-                  </button>
-                )}
-                {provider.email && (
-                  <button
-                    onClick={() => handleContactClick('email', provider.email)}
-                    className="flex items-center justify-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    <FaEnvelope className="mr-2" />
-                    Email
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
 
-          {/* AI Value Proposition */}
-          <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-            <div className="flex items-center mb-4">
-              <div className="bg-blue-100 p-2 rounded-lg mr-3">
-                <FaBolt className="text-blue-600" />
-              </div>
-              <h2 className="text-lg font-bold text-gray-900">Why Choose This Provider</h2>
-            </div>
-            
-            {loadingAI ? (
-              <div className="flex items-center space-x-2 text-blue-600">
-                <div className="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
-                <span>Analyzing provider strengths...</span>
-              </div>
-            ) : (
-              <p className="text-gray-700 leading-relaxed">{aiValueProp}</p>
-            )}
-          </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={providerProfile?.location}
+                      onChange={(e) => setProviderProfile(prev => ({...prev, location: e.target.value}))}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  ) : (
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <p className="text-gray-900 font-medium">{providerProfile?.location}</p>
+                    </div>
+                  )}
+                </div>
 
-          {/* About Section */}
-          <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">About {provider.businessName}</h2>
-            <p className="text-gray-700 leading-relaxed mb-6">
-              {provider.description || 'Professional service provider in Bataan.'}
-            </p>
-            
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-3">Business Details</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Owner:</span>
-                    <span className="font-medium">{provider.ownerName || 'N/A'}</span>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                    {isEditing ? (
+                      <input
+                        type="tel"
+                        value={providerProfile?.contactInfo?.phone}
+                        onChange={(e) => setProviderProfile(prev => ({...prev, contactInfo: {...prev.contactInfo, phone: e.target.value}}))}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    ) : (
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <p className="text-gray-900 font-medium">{providerProfile?.contactInfo?.phone}</p>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Category:</span>
-                    <span className="font-medium">{provider.category || 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Years in Business:</span>
-                    <span className="font-medium">{provider.yearsExperience || 0} years</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Status:</span>
-                    <span className={`font-medium ${provider.isVerified ? 'text-green-600' : 'text-yellow-600'}`}>
-                      {provider.isVerified ? 'Verified' : 'Pending Verification'}
-                    </span>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    {isEditing ? (
+                      <input
+                        type="email"
+                        value={providerProfile?.contactInfo?.email}
+                        onChange={(e) => setProviderProfile(prev => ({...prev, contactInfo: {...prev.contactInfo, email: e.target.value}}))}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    ) : (
+                      <div className="p-3 bg-gray-50 rounded-lg">
+                        <p className="text-gray-900 font-medium">{providerProfile?.contactInfo?.email}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
+
+                {isEditing && (
+                  <div className="flex items-center gap-4 pt-4">
+                    <button
+                      onClick={handleSaveProfile}
+                      className="flex items-center bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors"
+                    >
+                      Save Changes
+                    </button>
+                    <button
+                      onClick={() => setIsEditing(false)}
+                      className="px-6 py-3 bg-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-400 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
               </div>
               
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-3">Services</h3>
-                <div className="flex flex-wrap gap-2">
-                  {(provider.services || []).slice(0, 6).map((service, index) => (
-                    <span
-                      key={index}
-                      className="bg-gray-100 text-gray-700 text-sm px-3 py-1 rounded-md"
-                    >
-                      {service}
-                    </span>
-                  ))}
-                  {(provider.services || []).length > 6 && (
-                    <span className="text-gray-500 text-sm px-3 py-1">
-                      +{(provider.services || []).length - 6} more
-                    </span>
-                  )}
-                  {(provider.services || []).length === 0 && (
-                    <span className="text-gray-500 text-sm">No services listed</span>
-                  )}
+              {/* Contact & Stats */}
+              <div className="space-y-6">
+                <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl">
+                  <h4 className="font-semibold text-gray-900 mb-4">Contact Information</h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center text-gray-600">
+                      <FaMapMarkerAlt className="mr-3 text-blue-600" />
+                      <span>{providerProfile?.location}</span>
+                    </div>
+                    <div className="flex items-center text-gray-600">
+                      <FaPhone className="mr-3 text-green-600" />
+                      <span>{providerProfile?.contactInfo?.phone}</span>
+                    </div>
+                    <div className="flex items-center text-gray-600">
+                      <FaEnvelope className="mr-3 text-red-600" />
+                      <span>{providerProfile?.contactInfo?.email}</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Specialties */}
-          {(provider.specialties || []).length > 0 && (
-            <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">Specialties</h2>
-              <div className="flex flex-wrap gap-2">
-                {provider.specialties.map((specialty, index) => (
-                  <span
-                    key={index}
-                    className="bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full"
-                  >
-                    {specialty}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Portfolio */}
-          {(provider.portfolio || []).length > 0 && (
-            <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">Portfolio</h2>
-              <div className="grid md:grid-cols-3 gap-4">
-                {provider.portfolio.slice(0, 6).map((image, index) => (
-                  <div key={index} className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                    <img 
-                      src={image} 
-                      alt={`Portfolio ${index + 1}`}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
-                      onError={(e) => {
-                        e.target.src = 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=400';
-                      }}
-                    />
+                
+                <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl">
+                  <h4 className="font-semibold text-gray-900 mb-4">Business Stats</h4>
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Experience</span>
+                      <span className="font-semibold">{providerProfile?.yearsExperience} years</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Completed Jobs</span>
+                      <span className="font-semibold">{providerProfile?.completedJobs}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Response Time</span>
+                      <span className="font-semibold">{providerProfile?.responseTime}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Rating</span>
+                      <div className="flex items-center">
+                        <FaStar className="text-yellow-500 mr-1" />
+                        <span className="font-semibold">{providerProfile?.rating}</span>
+                      </div>
+                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Contact Information */}
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">Contact Information</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-3">
-                {provider.phone && (
-                  <div className="flex items-center">
-                    <FaPhone className="text-gray-400 mr-3" />
-                    <span className="text-gray-700">{provider.phone}</span>
-                  </div>
-                )}
-                {provider.email && (
-                  <div className="flex items-center">
-                    <FaEnvelope className="text-gray-400 mr-3" />
-                    <span className="text-gray-700">{provider.email}</span>
-                  </div>
-                )}
-                {provider.website && (
-                  <div className="flex items-center">
-                    <FaGlobe className="text-gray-400 mr-3" />
-                    <a 
-                      href={provider.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline"
-                    >
-                      {provider.website}
-                    </a>
-                  </div>
-                )}
-              </div>
-              <div>
-                <div className="flex items-center mb-2">
-                  <FaMapMarkerAlt className="text-gray-400 mr-3" />
-                  <span className="text-gray-700">Service Area</span>
                 </div>
-                <p className="text-gray-600 ml-6">
-                  {provider.address && `${provider.address}, `}
-                  {provider.barangay}, {provider.municipality}, Bataan
-                </p>
-              </div>
-            </div>
-
-            {/* Contact Actions */}
-            <div className="mt-6 pt-6 border-t">
-              <div className="flex flex-col sm:flex-row gap-3">
-                {provider.phone && (
-                  <button
-                    onClick={() => handleContactClick('phone', provider.phone)}
-                    className="flex items-center justify-center bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    <FaPhone className="mr-2" />
-                    Call {provider.businessName}
-                  </button>
-                )}
-                {provider.email && (
-                  <button
-                    onClick={() => handleContactClick('email', provider.email)}
-                    className="flex items-center justify-center bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    <FaEnvelope className="mr-2" />
-                    Send Email
-                  </button>
-                )}
               </div>
             </div>
           </div>
